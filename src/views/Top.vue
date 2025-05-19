@@ -1,37 +1,172 @@
 <template>
-    <div class="max-w-2xl mx-auto p-8 bg-white rounded shadow">
-      <h1 class="text-3xl font-bold mb-4 text-center">REFLEC BEAT Plus スコア管理アプリ</h1>
-      
-      <p class="mb-6 text-gray-700">
-        本アプリは、REFLEC BEAT Plus レベル11楽曲のスコアを上級者向けに管理・可視化できるツールです。
-        Normal / Expert 表示切り替え、達成率・フルコンボ管理、Tier分類などに対応しています。
-      </p>
+    <div class="top-wrapper">
+      <!-- サイト紹介セクション -->
+      <header class="page-title">
+      <h1>REFLEC BEAT plus レベル11</h1>
+      <h2>難易度表＆クリアランク管理サイト</h2>
+      </header>
+      <section class="card intro-card" style="max-width: 800px">
+        <h2 class="title">本サイトについて</h2>
+        <p class="lead">
+          <strong>REFLEC BEAT plus レベル11 難易度表＆クリアランク管理サイトにようこそ！</strong><br />
+          本サイトは、KONAMIの音楽ゲーム「REFLEC BEAT Plus」のクリアランクを個人で管理するための非公式ツールです。
+        </p>
+        <ul>
+          <li>クリアランク、FC/未FCを記録・可視化</li>
+          <li>95%以上を1%刻みで管理するExpertモード</li>
+          <li>クリアランク別のフィルター機能</li>
+          <li>ランク・達成率に応じたカラースケール表示</li>
+        </ul>
+      </section>
   
-      <p class="mb-6 text-red-600 font-semibold">
-        ※ スコア管理機能はログインユーザーのみ利用できます。未ログイン時は閲覧のみとなります。
+      <!-- ログイン・登録 -->
+      <section class="card login-card" style="max-width: 800px">
+        <h2 class="title">ログイン/新規登録</h2>
+        <p>以下のボタンからログインまたは新規登録をしてください。</p>
+        <div class="button-row">
+          <RouterLink to="/login" class="login-button">ログイン</RouterLink>
+          <RouterLink to="/register" class="register-button">新規登録</RouterLink>
+        </div>
+      </section>
+      <!-- 難易度表の作成基準 -->
+    <section class="card rule-card" style="max-width: 800px">
+      <h2 class="title purple">難易度表の作成基準</h2>
+      <ul>
+        <li><span class="important-note">AAA+基準</span></li>
+        <li>常識の範囲での当たり譜面が基準（ZZで全て綺麗な階段など天文学的な確率の当たり譜面は想定しない）</li>
+        <li>HIGH SPEED使用を想定</li>
+        <li>全押し、意図的なLO捨て、物理サドプラによるギアチェンといったプレイ方法も想定内</li>
+        <li>同地力内ではあいうえお順（アプリと同順）に整列</li>
+        <li>地力F, E, DがリフレシアのLv13、地力C, B, B+がリフレシアのLv14、地力A, A+, S, S+がリフレシアのLv15に概ね相当</li>
+        <li>リフレシアの詐称・逆詐称も考慮しているため、上記のレベルが必ずしも一致するとは限らない</li>
+        <li>（例：Lv14のquaver♪は地力E、Lv13のRefrainは地力B+とした）</li>
+      </ul>
+    </section>
+    
+    <!-- ご利用にあたって -->
+    <section class="card caution-card" style="max-width: 800px">
+      <h2 class="title pink">ご利用にあたって</h2>
+      <p class="important-note">
+        本サイトはファンによる個人開発であり、KONAMIおよび関連企業とは一切関係ありません。
       </p>
-  
-      <div class="flex justify-center gap-4">
-        <RouterLink to="/login">
-          <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-            ログイン
-          </button>
-        </RouterLink>
-        <RouterLink to="/register">
-          <button class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
-            新規登録
-          </button>
-        </RouterLink>
-        <RouterLink to="/dashboard">
-          <button class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
-            難易度表
-          </button>
-        </RouterLink>
-      </div>
+      <p>
+        掲載されている楽曲情報は非公式に分類・整理されたものであり、正確性や完全性を保証するものではありません。<br />
+        個人情報の管理には細心の注意を払っておりますが、万が一のため他サイトとのパスワードの共有はお控えください。<br />
+        本ツールの利用は自己責任でお願いいたします。
+      </p>
+    </section>
+
     </div>
   </template>
   
   <script setup lang="ts">
-  // 特にロジックは不要（静的ページ）
+  import { RouterLink } from 'vue-router'
   </script>
+  
+  <style>
+.top-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f4ff, #ffece6, #e8fff2);
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    align-items: center;
+}
+.page-title {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.page-title h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.page-title h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #444;
+}
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;     /* ← 最後に書くことで勝たせる！ */
+    padding: 24px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 8px solid #a48be0; /* パープルのライン */
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .lead {
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+  
+  ul {
+    padding-left: 1.2em;
+  }
+  
+  .button-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+  }
+  
+  .login-button,
+  .register-button {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    width: 120px;
+  }
+  
+  .login-button {
+    background: #59aaff;
+    color: white;
+  }
+  
+  .login-button:hover {
+    background: #1c8cff;
+  }
+  
+  .register-button {
+    background: #58d879;
+    color: white;
+  }
+  
+  .register-button:hover {
+    background: #2bbd5f;
+  }
+
+  .rule-card .title.purple {
+  border-left-color: #a48be0;
+}
+
+.caution-card .title.pink {
+  border-left-color: #ff5cb8;
+}
+
+.important-note {
+  color: #ff5cb8;
+  font-weight: 1000;
+}
+
+  </style>
   

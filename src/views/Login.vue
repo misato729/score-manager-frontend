@@ -1,30 +1,147 @@
 <template>
-    <div class="max-w-md mx-auto p-6 bg-white rounded shadow">
-      <h2 class="text-xl font-bold mb-4">ログイン</h2>
-      <form @submit.prevent="onLogin" class="space-y-4">
-        <input v-model="form.email" type="email" placeholder="メールアドレス" class="w-full border p-2 rounded" />
-        <input v-model="form.password" type="password" placeholder="パスワード" class="w-full border p-2 rounded" />
-        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded">ログイン</button>
+  <div class="login-wrapper">
+    <h1 class="page-title">ログイン</h1>
+
+    <!-- ログインフォーム -->
+    <section class="card login-card">
+      <h2 class="title purple">ログイン</h2>
+      <p class="desc">メールアドレスとパスワードを入力してください</p>
+      <form @submit.prevent="onLogin" class="form">
+        <label for="email">メールアドレス</label>
+        <input v-model="form.email" id="email" type="email" required />
+
+        <label for="password">パスワード</label>
+        <input v-model="form.password" id="password" type="password" required />
+
+        <label>
+          <input type="checkbox" v-model="form.remember" />
+          ログイン状態を保持する
+        </label>
+
+        <button type="submit" class="btn login-button">ログイン</button>
       </form>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { useRouter } from 'vue-router'
-  import { reactive } from 'vue'
-  import { useAuthStore } from '@/stores/authStore'
-  
-  const auth = useAuthStore()
-  const router = useRouter()
-  
-  const form = reactive({
-    email: '',
-    password: '',
-  })
-  
-  const onLogin = async () => {
+    </section>
+
+    <!-- 新規登録への案内 -->
+    <section class="card register-guide">
+      <h2 class="title purple">アカウントをお持ちでない場合</h2>
+      <p>以下のリンクから新規登録をしてください</p>
+      <RouterLink to="/register" class="btn register-button">新規登録</RouterLink>
+    </section>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const form = reactive({
+  email: '',
+  password: '',
+  remember: true,
+})
+
+const onLogin = async () => {
+  try {
     await auth.login(form)
     router.push('/dashboard')
+  } catch (e) {
+    alert('ログインに失敗しました')
   }
-  </script>
-  
+}
+</script>
+
+<style>
+.login-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff, #ffece6, #e8fff2);
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  padding: 24px;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-left: 8px solid #a48be0;
+  padding-left: 12px;
+  margin-bottom: 12px;
+}
+
+.desc {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 12px; 
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  box-sizing: border-box; 
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+
+.btn {
+  display: inline-block;
+  padding: 16px 24px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.login-button {
+  background: #59aaff;
+  color: white;
+  border: none;
+}
+
+.login-button:hover {
+  background: #1c8cff;
+}
+
+.register-button {
+  background: #58d879;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.register-button:hover {
+  background: #2bbd5f;
+}
+</style>

@@ -3,7 +3,10 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
+    const user = ref<{ name: string } | null>(null)
+    // 仮ログイン
+    user.value = { name: 'テスト太郎' };
+    
 
   const login = async (form: { email: string; password: string }) => {
     // Laravel完成後にaxios.post('/login') に差し替え
@@ -14,6 +17,10 @@ export const useAuthStore = defineStore('auth', () => {
     // Laravel完成後にaxios.post('/register') に差し替え
     user.value = { name: form.name, email: form.email }
   }
+  const logout = async () => {
+    user.value = null
+  }
+  
 
-  return { user, login, register }
+  return { user, login, register, logout }
 })
