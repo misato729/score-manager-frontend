@@ -96,7 +96,7 @@
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 800px;     /* ← 最後に書くことで勝たせる！ */
+    max-width: 800px; 
     padding: 24px;
     margin: 0 auto;
     box-sizing: border-box;
