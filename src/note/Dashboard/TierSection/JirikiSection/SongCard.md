@@ -1,51 +1,80 @@
-## SongCard.vue 設計書
+# SongCard.vue 設計書
 
-### ● 目的
-1曲ごとの表示・ランク・FC情報を編集または表示するカードコンポーネント。
+## 1. 概要
 
-###　UI要件
-- 上半分に曲名(Songs.title)を表示する⭕️
-- 下半分にランクプルダウンとFCチェックボックスを並列して配置する🔺もう少し上
-- ランクプルダウンはNormal/Expertモードに対応したものにする⭕️
-- ランクプルダウンで設定したランクに対応する色（@/constants/rank.tsに定義）にカードの背景色が変わる❌
-- FCチェックボックスにチェックを入れると #ff69b4の色でカードの上に「FULL COMBO!!」と表示され、#ffb6c1の色でbox-shadow, ::afterでカードの裏から光るデザインにする❌
-- 100%にチェックを入れると#E6B422でカードの上に「EXCELLENT!!!」と表示され、#E6B422をやや薄くした色でbox-shadow, ::afterでカードの裏から光る仕様にして、FCチェックボックスは非活性にする❌
+`SongCard.vue` は、1曲ごとのスコアを管理・表示するカード型コンポーネントです。  
+ユーザーが達成ランク・FC状態を編集でき、特定条件で光るエフェクトやラベルが表示されます。
 
-### インポート
-useUiStore 　from '@/stores/uiStore'（Pinia）
-{ Song } from '@/types'
-{ getRankColor } from '@/constants/rank'
+---
 
-### 関数
-- interface Props{song: {title: string, rank: string, fc: boolean})：jirikiSectionのsongを受け継いだ
-- props = defineProps<Props>()：Propsを使えるようにしたもの
-- rankStore = useRankStore()を使えるようにしたもの
-- uiStore = useUiStore()を使えるようにしたもの
-- currentRanks = RankStore.modeがNormalならNormalのランクスケール、ExpertならExpertのランクスケールを代入する
-- isExcellent = props.song.rank が'100%'の場合代入する
-- isFC = props.song.fcが真、またはisExcellent.value？の場合に代入する
-- editable = uiStoreがeditModeのときにtrue？
+## 2. Props
 
-### ● Props
-| 名前       | 型       | 説明                         |
-|------------|----------|------------------------------|
-| song       | Song     | 曲データ                      |
-| editable   | boolean  | 編集モードかどうか             |
+| プロパティ名 | 型     | 説明                       |
+|--------------|--------|----------------------------|
+| `song`       | `Song` | 楽曲データ1件（title, rank, fc, tierを含む） |
 
-### ● Emits
-| イベント名        | 用途                           |
-|------------------|--------------------------------|
-| update:rank      | ランクが変更されたとき通知       |
-| update:fc        | FC状態が変更されたとき通知       |
+---
 
-### ● 状態変数（ref, reactive）
-| 変数名         | 型       | 用途                        |
-|----------------|----------|-----------------------------|
-| selectedRank   | string   | 選択されたランク              |
-| isFullCombo    | boolean  | FULL COMBO状態               |
+## 3. 機能・仕様
 
+| 機能名              | 説明                                                                 |
+|---------------------|----------------------------------------------------------------------|
+| ランク選択          | `select` によりランクを変更（Normal/Expertに応じてリスト切替）       |
+| FCチェック          | `checkbox` により FC 状態を切替（ただし 100%時は強制ON & ロック）   |
+| 色付き背景          | ランクに対応した背景色を表示（`getRankColor`）                        |
+| ラベル表示          | 100% → `EXCELLENT!!!`、FC → `FULL COMBO!!` を上部に表示                |
+| 光エフェクト        | FC/EXCELLENT 時に `backglow` 背景光が表示                             |
+| 編集モード          | `editable = true`（現状は固定）                                      |
 
-### ● 表示制御
-- 達成率に応じた背景色
-- FC時のホットピンク演出
-- editable=false時は非表示＆簡略表示
+---
+
+## 4. リアクティブなロジック
+
+| 変数名         | 内容                                                         |
+|----------------|--------------------------------------------------------------|
+| `localSong`    | propsをローカルコピーし、双方向バインディングに対応         |
+| `rankColor`    | `getRankColor(localSong.rank)` による背景色                   |
+| `isFC`         | `localSong.fc === true`                                       |
+| `isExcellent`  | `localSong.rank === '100%'`                                   |
+| `fcLocked`     | `100%` のときは FC をロック                                   |
+| `currentRanks` | `mode` に応じて表示するランクリストを切り替え                |
+
+---
+
+## 5. UI構成
+
+| ブロック        | 説明                                                           |
+|-----------------|----------------------------------------------------------------|
+| `.backglow`     | FC/EXCELLENT時の光る背景（アニメーション付き）               |
+| `.fc-label`     | FC時に `FULL COMBO!!` 表示（上部中央）                        |
+| `.excellent-label` | 100%時に `EXCELLENT!!!` 表示（上部中央）                 |
+| `.card-surface` | カード本体（背景色つき）                                       |
+| `.title`        | 楽曲タイトルを中央表示                                         |
+| `.bottom`       | ランク `select` と `FC checkbox` を横並びで配置              |
+
+---
+
+## 6. スタイリング概要
+
+- `width`, `height`: 120pxの正方形カード
+- `backglow`: ぼかしと色付きの背景エフェクト（FC＝ピンク、EXCELLENT＝金色）
+- `animation`: `glow-in` によるふわっと浮かび上がる効果
+- `title`: 中央・太字・改行対応
+- `bottom`: `select` + `checkbox` を整列
+
+---
+
+## 7. 注意点
+
+- `SongCard` は自己完結型であり、外部の状態更新はローカルで完了しない限り反映されない（保存ロジック未実装）
+- `editable` が true 固定のため、編集ON/OFF切り替えが未実装（今後Props化が望ましい）
+
+---
+
+## 8. 拡張予定（ToDo）
+
+- [ ] `editable` を Props 化して、表示専用モードを追加
+- [ ] 保存ボタン or オートセーブ連携の実装
+- [ ] 長いタイトルの折り返し対応（またはツールチップ表示）
+- [ ] カードサイズのレスポンシブ対応（スマホ時は縮小）
+

@@ -19,7 +19,7 @@
     />
 
     <!-- Collapse：Tier別 Progress -->
-    <Transition name="fade">
+    <Transition name="collapse">
       <div v-if="showDetail" class="tier-progress-list">
         <ProgressBar
           v-for="tier in jirikiProgress"
@@ -140,4 +140,23 @@ const percentDisplay = computed(() => {
   flex-direction: column;
   gap: 8px;
 }
+/* Collapseアニメーション：0.3秒かけて開閉 */
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px; /* 十分大きい値を指定 */
+  opacity: 1;
+}
+
 </style>

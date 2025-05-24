@@ -1,34 +1,59 @@
-## JirikiSection.vue 設計書
+# JirikiSection.vue 設計書
 
-### ● 目的
-Tier別に曲のカード（SongCard）を5列で表示するグループコンポーネント。
+## 1. 概要
 
-### UI要件
-- Dashboard.vueのTierCard内のfilterの下に、地力S+, S, A+ A, B+, B, C, D, E, Fの順に表示する⭕️
-- 地力ランクは中央に表示させる⭕️
-- 地力セクションに該当する地力の曲がSongCardで表示される
-- SongCardはGridレイアウトで最大５列❌
-- filterPanel.vueでフィルターした時、該当のSongCardがフィルターされる（filterPanelからフィルタ情報をProp→DashBoardにSongCardをemitであってますか？）
+`JirikiSection.vue` は、特定の地力Tier（例：S+, A, D など）に分類された楽曲をグリッド形式で一覧表示するセクションです。Tierごとの見出し（ラベル）と、最大5列のカードレイアウトで構成されています。
 
-### インポート
-SongCard from '@/components/jiriki/SongCard.vue'
-Song from '@/types' なにこれ
+---
 
-### ● 関数
-interface Props { tierName: string, songs: Song[]}：Dashboard.vueのtierNameとsongsを受け継いだ
-const props = defineProps<Props>()：Propsを使えるようにしたもの
+## 2. Props
 
-### ● Props
-| 名前      | 型       | 説明                       |
-|-----------|----------|----------------------------|
-| tierName  | string   | 地力難易度の段位名         |
-| songs     | Song[]   | 該当Tierの曲リスト          |
+| プロパティ名 | 型         | 説明                            |
+|--------------|------------|---------------------------------|
+| `tierName`   | `string`   | 表示対象の地力Tier名（例: S+）  |
+| `songs`      | `Song[]`   | 該当Tierに属する楽曲の配列      |
 
-### ● 使用コンポーネント
-- SongCard.vue
+---
 
-### ● 状態変数
-（基本的に内部状態は持たず、propsとv-forで描画）
+## 3. 使用コンポーネント
 
-### ● その他
-- 曲リストはフィルタリング後のデータを親から受け取る
+| コンポーネント名 | 説明                         |
+|------------------|------------------------------|
+| `SongCard.vue`   | 楽曲を1件ずつ表示するカード |
+
+---
+
+## 4. UI構成
+
+| 要素名         | 説明                                             |
+|----------------|--------------------------------------------------|
+| `.tier-title`  | Tier名（例：地力S+）を中央揃えで表示             |
+| `.song-grid`   | 楽曲カードを最大5列のグリッドで表示              |
+| `SongCard`     | `song` オブジェクトを渡して1曲ずつ描画          |
+
+---
+
+## 5. スタイリング概要
+
+```css
+.jiriki-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tier-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.song-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 20px;
+}
+```
+grid-template-columns により 最大5列 に制限され、曲数が少ない場合でも均等表示
+gap によりカード同士の余白が確保される

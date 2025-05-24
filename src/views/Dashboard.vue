@@ -3,7 +3,6 @@
     <!-- ✅ モード切替（右上） -->
     <div class="top-controls">
       <ModeSwitch />
-      <UserMenu /> <!-- 仮：ログイン中ユーザー名など -->
     </div>
 
     <!-- ✅ タイトル -->

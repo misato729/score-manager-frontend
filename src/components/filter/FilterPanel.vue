@@ -14,9 +14,17 @@ const uiStore = useUiStore()
 const filterStore = useFilterStore()
 
 const mode = computed(() => uiStore.mode)
+
 const currentRanks = computed(() =>
   mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
 )
+
+// ✅ 初期化は mode 切替時のみ行う
+watch(mode, (newMode) => {
+  filterStore.selectedRanks = [
+    ...(newMode === 'Expert' ? ExpertRankScale : NormalRankScale),
+  ]
+}, { immediate: true })
 
 // ✅ 明度に応じた文字色（白 or 黒）
 function getTextColor(bgColor: string): string {
@@ -27,11 +35,6 @@ function getTextColor(bgColor: string): string {
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 150 ? '#000' : '#fff'
 }
-
-// ✅ モード変更時、選択ランクを初期化
-watch(currentRanks, (newRanks) => {
-  filterStore.selectedRanks = [...newRanks]
-}, { immediate: true })
 </script>
 
 <template>
@@ -52,7 +55,7 @@ watch(currentRanks, (newRanks) => {
           :value="rank"
           v-model="filterStore.selectedRanks"
         />
-        {{ rankDisplay(rank, mode.value) }}
+        {{ rankDisplay(rank, mode) }}
       </label>
     </div>
 
@@ -67,8 +70,7 @@ watch(currentRanks, (newRanks) => {
       >
         <input
           type="checkbox"
-          :checked="filterStore.showFC"
-          @change="filterStore.toggleFC()"
+          v-model="filterStore.showFC"
         />
         FC
       </label>
@@ -82,8 +84,7 @@ watch(currentRanks, (newRanks) => {
       >
         <input
           type="checkbox"
-          :checked="filterStore.showNotFC"
-          @change="filterStore.toggleNotFC()"
+          v-model="filterStore.showNotFC"
         />
         未FC
       </label>

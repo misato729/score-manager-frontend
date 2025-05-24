@@ -34,35 +34,41 @@
 <script setup lang="ts">
 import { computed, watch, reactive } from 'vue'
 import type { Song } from '@/types'
-import { getRankColor } from '@/utils/rank'
+import { getRankColor, rankDisplay } from '@/utils/rank'
 import { useUiStore } from '@/stores/uiStore'
 
 const props = defineProps<{ song: Song }>()
-
-// ローカルコピー（親を直接書き換えない）
-const localSong = reactive({ ...props.song })
 const uiStore = useUiStore()
 
-// モードによるランクリスト切り替え（例：AAA+, AAA...）
+// ローカルコピー（親へはまだ反映しない）
+const localSong = reactive({ ...props.song })
+
+// 現在のモード
+const mode = computed(() => uiStore.mode)
+
+// モードに応じたランクリスト
 const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
 const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
-const currentRanks = computed(() => (uiStore.mode === 'Expert' ? expertRanks : normalRanks))
+const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : normalRanks))
 
-// 色・演出制御
-const rankColor = computed(() => getRankColor(localSong.rank))
+// ✅ 表示上のランクを取得（モード変換含む）
+const displayRank = computed(() => rankDisplay(localSong.rank, mode.value))
+
+// ✅ 色や演出制御（表示ランクに対応した色）
+const rankColor = computed(() => getRankColor(displayRank.value))
 const isFC = computed(() => localSong.fc)
 const isExcellent = computed(() => localSong.rank === '100%')
 const showGlow = computed(() => isFC.value || isExcellent.value)
 const fcLocked = computed(() => localSong.rank === '100%')
 
-// ✅ 100%ならFCを自動ON
+// ✅ 100%ならFCを強制ON
 watch(() => localSong.rank, (newRank) => {
   if (newRank === '100%') {
     localSong.fc = true
   }
 })
 
-// 編集モードON/OFF（今後PropsにしてもOK）
+// 今後切り替え可能にする前提でeditableは仮固定
 const editable = true
 </script>
 
@@ -77,8 +83,12 @@ const editable = true
   justify-content: center;
   z-index: 0;
 }
+
 .title {
-  font-size: 1.3rem;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 24px;
+  line-height: 1.4;
   font-weight: bold;
 }
 
@@ -152,13 +162,6 @@ const editable = true
 
 .excellent-label {
   color: #E6B422;
-}
-
-.title {
-  font-size: 13px;
-  text-align: center;
-  margin-top: 24px;
-  line-height: 1.4;
 }
 
 .bottom {
