@@ -1,7 +1,9 @@
 <template>
   <div class="progress-bar-container">
     <!-- Tierラベル -->
-    <span class="tier-label">{{ tier }}</span>
+    <!-- 修正後 -->
+<span class="tier-label">{{ tier === '全体' ? '全体' : `地力${tier}` }}</span>
+
 
     <!-- バー -->
     <div class="bar-wrapper">
@@ -9,41 +11,42 @@
         class="bar-filled"
         :style="{
           width: percentage + '%',
-          backgroundColor: rankColor
+          backgroundColor: barColor
         }"
       />
     </div>
 
     <!-- 数値 -->
     <span class="count-label">{{ achieved }} / {{ total }}</span>
-  </div>
 
-  <!-- 詳細表示（スロット） -->
-  <div v-if="showDetail" class="detail-section">
-    <slot />
+    <!-- 詳細スロット（任意） -->
+    <div v-if="showDetail" class="detail-section">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getRankColor } from '@/constants/rank'
+import { getRankColor } from '@/utils/rank'
 
 interface Props {
   tier: string
   achieved: number
   total: number
-  rank: string
+  rank?: string // optional: 現在の目標ランク（色に使う）
   showDetail?: boolean
 }
 
 const props = defineProps<Props>()
 
-const percentage = computed(() => {
-  if (props.total === 0) return 0
-  return Math.round((props.achieved / props.total) * 100)
-})
+const percentage = computed(() =>
+  props.total === 0 ? 0 : Math.round((props.achieved / props.total) * 100)
+)
 
-const rankColor = computed(() => getRankColor(props.rank) || '#ccc')
+const barColor = computed(() => {
+  return props.rank ? getRankColor(props.rank) : '#ccc'
+})
 </script>
 
 <style scoped>

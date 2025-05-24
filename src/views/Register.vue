@@ -83,13 +83,7 @@ const onRegister = async () => {
   padding: 24px;
 }
 
-.title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  border-left: 8px solid #a48be0;
-  padding-left: 12px;
-  margin-bottom: 12px;
-}
+
 
 .title.green {
   border-left-color: #58d879;
@@ -151,5 +145,15 @@ input[type="password"] {
 
 .login-button:hover {
   background: #1c8cff;
+}
+</style>
+
+<style scoped>
+.title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-left: 8px solid #a48be0;
+  padding-left: 12px;
+  margin-bottom: 12px;
 }
 </style>

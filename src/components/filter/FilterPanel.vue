@@ -2,23 +2,23 @@
 import { computed, watch } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
 import { useFilterStore } from '@/stores/filterStore'
-import { getRankColor, getFCColor } from '@/constants/rank'
+import {
+  getRankColor,
+  getFCColor,
+  NormalRankScale,
+  ExpertRankScale,
+  rankDisplay,
+} from '@/utils/rank'
 
 const uiStore = useUiStore()
 const filterStore = useFilterStore()
 
 const mode = computed(() => uiStore.mode)
-
-const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
-const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
 const currentRanks = computed(() =>
-  mode.value === 'Expert' ? expertRanks : normalRanks
+  mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
 )
 
-// FC表示用の定数
-const currentFC = ['FC', '未FC']
-
-// 明度で白黒を切り替える
+// ✅ 明度に応じた文字色（白 or 黒）
 function getTextColor(bgColor: string): string {
   const hex = bgColor.replace('#', '')
   const r = parseInt(hex.substring(0, 2), 16)
@@ -28,7 +28,7 @@ function getTextColor(bgColor: string): string {
   return brightness > 150 ? '#000' : '#fff'
 }
 
-// モード切り替えでランク初期化
+// ✅ モード変更時、選択ランクを初期化
 watch(currentRanks, (newRanks) => {
   filterStore.selectedRanks = [...newRanks]
 }, { immediate: true })
@@ -52,43 +52,57 @@ watch(currentRanks, (newRanks) => {
           :value="rank"
           v-model="filterStore.selectedRanks"
         />
-        {{ rank }}
+        {{ rankDisplay(rank, mode.value) }}
       </label>
     </div>
 
     <!-- ✅ FCフィルター -->
     <div class="filter-group">
       <label
-        v-for="FC in currentFC"
-        :key="FC"
         class="checkbox-item"
         :style="{
-          backgroundColor: getFCColor(FC),
-          color: getTextColor(getFCColor(FC))
+          backgroundColor: getFCColor('FC'),
+          color: getTextColor(getFCColor('FC'))
         }"
       >
         <input
           type="checkbox"
-          :value="FC"
-          v-model="filterStore.selectedFC"
+          :checked="filterStore.showFC"
+          @change="filterStore.toggleFC()"
         />
-        {{ FC }}
+        FC
+      </label>
+
+      <label
+        class="checkbox-item"
+        :style="{
+          backgroundColor: getFCColor('未FC'),
+          color: getTextColor(getFCColor('未FC'))
+        }"
+      >
+        <input
+          type="checkbox"
+          :checked="filterStore.showNotFC"
+          @change="filterStore.toggleNotFC()"
+        />
+        未FC
       </label>
     </div>
-
-    </div>
+  </div>
 </template>
 
 <style scoped>
 .filter-panel {
   margin-bottom: 24px;
 }
+
 .filter-group {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 12px;
 }
+
 .checkbox-item {
   font-size: 14px;
   user-select: none;
@@ -98,6 +112,7 @@ watch(currentRanks, (newRanks) => {
   padding: 4px 8px;
   border-radius: 6px;
 }
+
 .checkbox-item input[type='checkbox'] {
   accent-color: white;
 }

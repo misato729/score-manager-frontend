@@ -1,53 +1,66 @@
 <template>
-    <div class="mode-switch">
-      <label>
-        <input
-          type="radio"
-          value="Normal"
-          v-model="mode"
-          @change="onModeChange"
-        />
-        Normal
-      </label>
-      <span>/</span>
-      <label>
-        <input
-          type="radio"
-          value="Expert"
-          v-model="mode"
-          @change="onModeChange"
-        />
-        Expert
-      </label>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { useUiStore } from '@/stores/uiStore'
-  import { computed } from 'vue'
-  
-  const uiStore = useUiStore()
-  const mode = computed({
-    get: () => uiStore.mode,
-    set: (val) => uiStore.setMode(val),
-  })
-  
-  const onModeChange = () => {
-    // 必要があればここでイベント発行など
+  <div class="mode-switch">
+    <label class="radio-label">
+      <input
+        type="radio"
+        name="mode"
+        value="Normal"
+        v-model="mode"
+      />
+      Normal
+    </label>
+    <span class="divider">/</span>
+    <label class="radio-label">
+      <input
+        type="radio"
+        name="mode"
+        value="Expert"
+        v-model="mode"
+      />
+      Expert
+    </label>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useUiStore } from '@/stores/uiStore'
+import type { Mode } from '@/types'
+import { computed } from 'vue'
+
+const uiStore = useUiStore()
+
+// ✅ v-model連携：getter/setterでリアルタイムに反映
+const mode = computed<Mode>({
+  get: () => uiStore.mode,
+  set: (newMode) => {
+    uiStore.setMode(newMode)
   }
-  </script>
-  
-  <style scoped>
-  .mode-switch {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    font-size: 14px;
-    gap: 8px;
-  }
-  
-  input[type="radio"] {
-    margin-right: 4px;
-  }
-  </style>
-  
+})
+</script>
+
+<style scoped>
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radio-label {
+  font-size: 16px;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.radio-label input[type='radio'] {
+  accent-color: black;
+  width: 18px;
+  height: 18px;
+}
+
+.divider {
+  color: #999;
+  font-size: 16px;
+}
+</style>

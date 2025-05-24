@@ -1,6 +1,6 @@
 // src/stores/authStore.ts（仮）
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<{ name: string } | null>(null)
@@ -24,3 +24,4 @@ export const useAuthStore = defineStore('auth', () => {
 
   return { user, login, register, logout }
 })
+

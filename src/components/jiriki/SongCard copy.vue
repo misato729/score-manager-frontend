@@ -1,85 +1,80 @@
 <template>
   <div class="song-card">
-    <!-- ✅ 光エフェクト -->
-    <div
-      v-if="showGlow"
-      class="backglow"
-      :class="{ excellent: isExcellent, fc: !isExcellent && isFC }"
-    />
+  <!-- ✅ 光エフェクト -->
+  <div
+    v-if="showGlow"
+    class="backglow"
+    :class="{ excellent: isExcellent, fc: !isExcellent && isFC }"
+  ></div>
 
-    <!-- ✅ ラベル -->
-    <div v-if="isExcellent" class="excellent-label">EXCELLENT!!!</div>
-    <div v-else-if="isFC" class="fc-label">FULL COMBO!!</div>
+  <!-- ラベル表示 -->
+  <div v-if="isExcellent" class="excellent-label">EXCELLENT!!!</div>
+  <div v-else-if="isFC" class="fc-label">FULL COMBO!!</div>
 
-    <!-- ✅ カード本体 -->
-    <div class="card-surface" :style="{ backgroundColor: rankColor }">
-      <div class="title">{{ localSong.title }}</div>
+  <!-- 本体 -->
+  <div class="card-surface" :style="{ backgroundColor: rankColor }">
+    <div class="title">{{ localSong.title }}</div>
 
-      <div class="bottom">
-        <!-- ランク選択 -->
-        <select v-model="localSong.rank" :disabled="!editable">
-          <option v-for="rank in currentRanks" :key="rank" :value="rank">{{ rank }}</option>
-        </select>
+    <div class="bottom">
+      <!-- ランク選択 -->
+      <select v-model="localSong.rank" :disabled="!editable">
+        <option v-for="rank in currentRanks" :key="rank" :value="rank">{{ rank }}</option>
+      </select>
 
-        <!-- FCチェック（100%時はロック） -->
-        <label>
-          <input type="checkbox" v-model="localSong.fc" :disabled="fcLocked" />
-          FC
-        </label>
-      </div>
+      <!-- FCチェック（100%なら強制ONかつ非活性） -->
+      <label>
+        <input
+          type="checkbox"
+          v-model="localSong.fc"
+          :disabled="fcLocked"
+        />
+        FC
+      </label>
     </div>
   </div>
+</div>
+
 </template>
 
 <script setup lang="ts">
+
+
 import { computed, watch, reactive } from 'vue'
 import type { Song } from '@/types'
-import { getRankColor } from '@/utils/rank'
-import { useUiStore } from '@/stores/uiStore'
 
 const props = defineProps<{ song: Song }>()
 
-// ローカルコピー（親を直接書き換えない）
+// ローカルコピー（双方向バインディング用）
 const localSong = reactive({ ...props.song })
-const uiStore = useUiStore()
 
-// モードによるランクリスト切り替え（例：AAA+, AAA...）
-const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
-const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
-const currentRanks = computed(() => (uiStore.mode === 'Expert' ? expertRanks : normalRanks))
-
-// 色・演出制御
-const rankColor = computed(() => getRankColor(localSong.rank))
-const isFC = computed(() => localSong.fc)
-const isExcellent = computed(() => localSong.rank === '100%')
-const showGlow = computed(() => isFC.value || isExcellent.value)
+// 100% のときに FC を強制ON＆ロック
 const fcLocked = computed(() => localSong.rank === '100%')
 
-// ✅ 100%ならFCを自動ON
 watch(() => localSong.rank, (newRank) => {
   if (newRank === '100%') {
     localSong.fc = true
   }
 })
 
-// 編集モードON/OFF（今後PropsにしてもOK）
-const editable = true
+// FC表示＆光演出の条件
+const isFC = computed(() => localSong.fc)
+const isExcellent = computed(() => localSong.rank === '100%')
+const showGlow = computed(() => isFC.value || isExcellent.value)
+
+
 </script>
 
 <style scoped>
 .song-card {
   position: relative;
+  z-index: 0;
+  overflow: visible;
   width: 120px;
   height: 120px;
   border-radius: 12px;
   display: flex;
   align-items: stretch;
   justify-content: center;
-  z-index: 0;
-}
-.title {
-  font-size: 1.3rem;
-  font-weight: bold;
 }
 
 .card-surface {
@@ -92,6 +87,7 @@ const editable = true
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  background-color: transparent;
 }
 
 .backglow {
@@ -107,8 +103,9 @@ const editable = true
   opacity: 0;
   animation: glow-in 0.3s ease-out forwards;
   pointer-events: none;
+  
 }
-
+/* ✅ アニメーション定義 */
 @keyframes glow-in {
   from {
     opacity: 0;

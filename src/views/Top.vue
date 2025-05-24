@@ -103,13 +103,7 @@
 }
 
 
-  .title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-left: 8px solid #a48be0; /* パープルのライン */
-    padding-left: 12px;
-    margin-bottom: 16px;
-  }
+
   
   .lead {
     margin-bottom: 12px;
@@ -170,3 +164,12 @@
 
   </style>
   
+<style scoped>
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 8px solid #a48be0; /* パープルのライン */
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+</style>
