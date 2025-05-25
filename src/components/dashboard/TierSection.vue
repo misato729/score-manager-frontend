@@ -1,50 +1,86 @@
 <template>
-  <div class="tier-section">
-    <!-- フィルターパネル -->
-    <FilterPanel />
-
-    <!-- 地力Tierごとのセクション -->
-    <div class="jirikis">
-      <JirikiSection
-        v-for="section in songsByTier"
-        :key="section.tierName"
-        :tierName="section.tierName"
-        :songs="section.songs"
-      />
+    <div class="tier-section">
+      <!-- ✅ フィルターパネル -->
+      <FilterPanel />
+  
+      <!-- ✅ 地力別セクション（10段階） -->
+      <div class="jiriki-container">
+        <JirikiSection
+          v-for="group in jirikiGroups"
+          :key="group.tier"
+          :tier="group.tier"
+          :songs="group.songs"
+        />
+      </div>
     </div>
-  </div>
-</template>
+  </template>
+  
+  <script setup lang="ts">
+  import { computed } from 'vue'
+  import FilterPanel from '@/components/filter/FilterPanel.vue'
+  import JirikiSection from '@/components/jiriki/JirikiSection.vue'
+  import { useFilterStore } from '@/stores/filterStore'
+  import { useUiStore } from '@/stores/uiStore'
+  import { rankDisplay } from '@/utils/rank' 
+  
+// ✅ 曲データ型
+interface Song {
+    id: number
+    title: string
+    jiriki_rank: string
+    rank: string
+    fc: boolean
+}
+  
+const props = defineProps<{
+    songs: Song[]
+}>()
+  
+const filterStore = useFilterStore()
 
-<script setup lang="ts">
-import FilterPanel from '@/components/filter/FilterPanel.vue'
-import JirikiSection from '@/components/jiriki/JirikiSection.vue'
-import { computed, ref } from 'vue'
-import { mockSongs } from '@/mock/mockSongs'
-import type { Song } from '@/types'
+const uiStore = useUiStore()
+const mode = computed(() => uiStore.mode)
+  
+// ✅ モード・ランク・FCでフィルタリング
+const filteredSongs = computed(() =>
+  props.songs.filter(song => {
+    const display = rankDisplay(song.rank, mode.value)
 
-const allSongs = ref<Song[]>(mockSongs)
+    const rankOk =
+      filterStore.selectedRanks.length === 0 ||
+      filterStore.selectedRanks.includes(display)
 
-// 地力ランク別に分類（フィルターなしの全曲対象）
-const jirikiTiers = ['S+', 'S', 'A+', 'A', 'B+', 'B', 'C', 'D', 'E', 'F']
+    const fcOk =
+      (song.fc && filterStore.showFC) ||
+      (!song.fc && filterStore.showNotFC)
 
-const songsByTier = computed(() =>
-  jirikiTiers.map((tier) => ({
-    tierName: tier,
-    songs: allSongs.value.filter((song) => song.tier === tier),
-  }))
+    return rankOk && fcOk
+  })
 )
-</script>
-
-<style scoped>
-.tier-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.jirikis {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-</style>
+  
+  // ✅ 地力ランク一覧（S+ ～ F）
+  const jirikiScale = ['S+', 'S', 'A+', 'A', 'B+', 'B', 'C', 'D', 'E', 'F']
+  
+  // ✅ 地力ごとにグルーピング
+  const jirikiGroups = computed(() =>
+    jirikiScale.map(tier => ({
+      tier,
+      songs: filteredSongs.value.filter(song => song.jiriki_rank === tier)
+    }))
+  )
+  </script>
+  
+  <style scoped>
+  .tier-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .jiriki-container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  </style>
+  

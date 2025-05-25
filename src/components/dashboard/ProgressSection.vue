@@ -95,8 +95,9 @@ const jirikiProgress = computed(() =>
 )
 
 // ✅ 全体の進捗
-const totalAchieved = computed(() => filteredSongs.value.filter(isAchieved).length)
-const totalSongs = computed(() => filteredSongs.value.length)
+const totalAchieved = computed(() => mockSongs.filter(isAchieved).length)
+const totalSongs = computed(() => mockSongs.length)
+
 const percentDisplay = computed(() => {
   if (totalSongs.value === 0) return '0%'
   return `${Math.round((totalAchieved.value / totalSongs.value) * 100)}%`

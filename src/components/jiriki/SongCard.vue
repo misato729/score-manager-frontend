@@ -1,27 +1,21 @@
 <template>
   <div class="song-card">
-    <!-- ✅ 光エフェクト -->
-    <div
-      v-if="showGlow"
-      class="backglow"
-      :class="{ excellent: isExcellent, fc: !isExcellent && isFC }"
-    />
-
-    <!-- ✅ ラベル -->
+    <div v-if="showGlow" class="backglow" :class="{ excellent: isExcellent, fc: !isExcellent && isFC }" />
     <div v-if="isExcellent" class="excellent-label">EXCELLENT!!!</div>
     <div v-else-if="isFC" class="fc-label">FULL COMBO!!</div>
 
-    <!-- ✅ カード本体 -->
     <div class="card-surface" :style="{ backgroundColor: rankColor }">
-      <div class="title">{{ localSong.title }}</div>
-
+      <div
+        class="title"
+        ref="titleRef"
+        :style="{ marginTop: isLongTitle ? '11px' : '24px' }"
+      >
+        {{ localSong.title }}
+      </div>
       <div class="bottom">
-        <!-- ランク選択 -->
         <select v-model="localSong.rank" :disabled="!editable">
           <option v-for="rank in currentRanks" :key="rank" :value="rank">{{ rank }}</option>
         </select>
-
-        <!-- FCチェック（100%時はロック） -->
         <label>
           <input type="checkbox" v-model="localSong.fc" :disabled="fcLocked" />
           FC
@@ -32,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, reactive } from 'vue'
+import { computed, watch, reactive, ref, onMounted, nextTick } from 'vue'
 import type { Song } from '@/types'
 import { getRankColor, rankDisplay } from '@/utils/rank'
 import { useUiStore } from '@/stores/uiStore'
@@ -40,35 +34,46 @@ import { useUiStore } from '@/stores/uiStore'
 const props = defineProps<{ song: Song }>()
 const uiStore = useUiStore()
 
-// ローカルコピー（親へはまだ反映しない）
-const localSong = reactive({ ...props.song })
+const localSong = reactive({
+  ...props.song,
+  fc: Boolean(props.song.fc),
+})
 
-// 現在のモード
 const mode = computed(() => uiStore.mode)
+const isExcellent = computed(() => localSong.rank === '100%')
+const isFC = computed(() => localSong.fc)
+const showGlow = computed(() => isFC.value || isExcellent.value)
+const fcLocked = computed(() => isExcellent.value)
+const rankColor = computed(() => getRankColor(rankDisplay(localSong.rank, mode.value)))
 
-// モードに応じたランクリスト
 const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
 const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
 const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : normalRanks))
 
-// ✅ 表示上のランクを取得（モード変換含む）
-const displayRank = computed(() => rankDisplay(localSong.rank, mode.value))
-
-// ✅ 色や演出制御（表示ランクに対応した色）
-const rankColor = computed(() => getRankColor(displayRank.value))
-const isFC = computed(() => localSong.fc)
-const isExcellent = computed(() => localSong.rank === '100%')
-const showGlow = computed(() => isFC.value || isExcellent.value)
-const fcLocked = computed(() => localSong.rank === '100%')
-
-// ✅ 100%ならFCを強制ON
 watch(() => localSong.rank, (newRank) => {
   if (newRank === '100%') {
     localSong.fc = true
   }
 })
 
-// 今後切り替え可能にする前提でeditableは仮固定
+// ✅ タイトルの高さを計測して行数チェック
+const titleRef = ref<HTMLElement | null>(null)
+const isLongTitle = ref(false)
+
+const checkTitleLines = () => {
+  if (titleRef.value) {
+    const lineHeight = 17 // CSSと合わせる
+    const lines = Math.round(titleRef.value.clientHeight / lineHeight)
+    isLongTitle.value = lines >= 3
+  }
+}
+
+onMounted(() => nextTick(checkTitleLines))
+watch(() => props.song.title, async () => {
+  await nextTick()
+  checkTitleLines()
+})
+
 const editable = true
 </script>
 
@@ -76,20 +81,11 @@ const editable = true
 .song-card {
   position: relative;
   width: 120px;
-  height: 120px;
+  min-height: 120px;
   border-radius: 12px;
   display: flex;
-  align-items: stretch;
-  justify-content: center;
+  flex-direction: column;
   z-index: 0;
-}
-
-.title {
-  font-size: 13px;
-  text-align: center;
-  margin-top: 24px;
-  line-height: 1.4;
-  font-weight: bold;
 }
 
 .card-surface {
@@ -102,6 +98,23 @@ const editable = true
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  height: 100%;
+}
+
+.title {
+  font-size: 13px;
+  text-align: center;
+  line-height: 17px;
+  font-weight: bold;
+  word-break: break-word;
+  transition: margin 0.2s ease;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
 }
 
 .backglow {
@@ -162,12 +175,5 @@ const editable = true
 
 .excellent-label {
   color: #E6B422;
-}
-
-.bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
 }
 </style>

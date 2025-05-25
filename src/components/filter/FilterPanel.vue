@@ -19,14 +19,18 @@ const currentRanks = computed(() =>
   mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
 )
 
-// ✅ 初期化は mode 切替時のみ行う
-watch(mode, (newMode) => {
-  filterStore.selectedRanks = [
-    ...(newMode === 'Expert' ? ExpertRankScale : NormalRankScale),
-  ]
-}, { immediate: true })
+// ✅ 初期化（mode切り替え時に全選択）
+watch(
+  mode,
+  (newMode) => {
+    filterStore.selectedRanks = [
+      ...(newMode === 'Expert' ? ExpertRankScale : NormalRankScale),
+    ]
+  },
+  { immediate: true }
+)
 
-// ✅ 明度に応じた文字色（白 or 黒）
+// ✅ 明度による文字色
 function getTextColor(bgColor: string): string {
   const hex = bgColor.replace('#', '')
   const r = parseInt(hex.substring(0, 2), 16)
@@ -35,12 +39,28 @@ function getTextColor(bgColor: string): string {
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 150 ? '#000' : '#fff'
 }
+
+// ✅ ALLチェックの状態
+const allSelected = computed(() =>
+  currentRanks.value.every((rank) => filterStore.selectedRanks.includes(rank))
+)
+
+// ✅ トグル関数
+function toggleAllRanks() {
+  if (allSelected.value) {
+    filterStore.selectedRanks = []
+  } else {
+    filterStore.selectedRanks = [...currentRanks.value]
+  }
+}
 </script>
 
 <template>
   <div class="filter-panel">
-    <!-- ✅ ランクフィルター -->
+    <!-- ✅ ランクフィルター（ALL含む） -->
     <div class="filter-group">
+
+      <!-- ✅ 各ランク -->
       <label
         v-for="rank in currentRanks"
         :key="rank"
@@ -56,6 +76,20 @@ function getTextColor(bgColor: string): string {
           v-model="filterStore.selectedRanks"
         />
         {{ rankDisplay(rank, mode) }}
+      </label>
+      <!-- ✅ ALLチェックボックス -->
+      <label
+        class="checkbox-item all-chip"
+        :class="{ selected: allSelected }"
+        @click.prevent="toggleAllRanks"
+        :style="{
+          backgroundColor: '#222',
+          color: '#fff',
+          fontWeight: 'bold'
+        }"
+      >
+        <input type="checkbox" :checked="allSelected" />
+        ALL
       </label>
     </div>
 
@@ -116,5 +150,11 @@ function getTextColor(bgColor: string): string {
 
 .checkbox-item input[type='checkbox'] {
   accent-color: white;
+}
+
+.all-chip {
+  background-color: #222;
+  color: #fff;
+  font-weight: bold;
 }
 </style>
