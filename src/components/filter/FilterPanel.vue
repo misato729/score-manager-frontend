@@ -1,66 +1,7 @@
-<script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useUiStore } from '@/stores/uiStore'
-import { useFilterStore } from '@/stores/filterStore'
-import {
-  getRankColor,
-  getFCColor,
-  NormalRankScale,
-  ExpertRankScale,
-  rankDisplay,
-} from '@/utils/rank'
-
-const uiStore = useUiStore()
-const filterStore = useFilterStore()
-
-const mode = computed(() => uiStore.mode)
-
-const currentRanks = computed(() =>
-  mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
-)
-
-// ✅ 初期化（mode切り替え時に全選択）
-watch(
-  mode,
-  (newMode) => {
-    filterStore.selectedRanks = [
-      ...(newMode === 'Expert' ? ExpertRankScale : NormalRankScale),
-    ]
-  },
-  { immediate: true }
-)
-
-// ✅ 明度による文字色
-function getTextColor(bgColor: string): string {
-  const hex = bgColor.replace('#', '')
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000
-  return brightness > 150 ? '#000' : '#fff'
-}
-
-// ✅ ALLチェックの状態
-const allSelected = computed(() =>
-  currentRanks.value.every((rank) => filterStore.selectedRanks.includes(rank))
-)
-
-// ✅ トグル関数
-function toggleAllRanks() {
-  if (allSelected.value) {
-    filterStore.selectedRanks = []
-  } else {
-    filterStore.selectedRanks = [...currentRanks.value]
-  }
-}
-</script>
-
 <template>
   <div class="filter-panel">
-    <!-- ✅ ランクフィルター（ALL含む） -->
+    <!-- ランク一覧 -->
     <div class="filter-group">
-
-      <!-- ✅ 各ランク -->
       <label
         v-for="rank in currentRanks"
         :key="rank"
@@ -72,59 +13,105 @@ function toggleAllRanks() {
       >
         <input
           type="checkbox"
-          :value="rank"
-          v-model="filterStore.selectedRanks"
+          :checked="filterStore.selectedRanks.includes(rank)"
+          @change="toggleRank(rank)"
         />
         {{ rankDisplay(rank, mode) }}
       </label>
-      <!-- ✅ ALLチェックボックス -->
-      <label
-        class="checkbox-item all-chip"
-        :class="{ selected: allSelected }"
-        @click.prevent="toggleAllRanks"
-        :style="{
-          backgroundColor: '#222',
-          color: '#fff',
-          fontWeight: 'bold'
-        }"
-      >
-        <input type="checkbox" :checked="allSelected" />
+
+      <!-- ALLボタン -->
+      <label class="checkbox-item all-chip">
+        <input type="checkbox" :checked="isAllChecked" @change="toggleAll" />
         ALL
       </label>
     </div>
 
-    <!-- ✅ FCフィルター -->
+    <!-- FC/未FC -->
     <div class="filter-group">
-      <label
-        class="checkbox-item"
-        :style="{
-          backgroundColor: getFCColor('FC'),
-          color: getTextColor(getFCColor('FC'))
-        }"
-      >
-        <input
-          type="checkbox"
-          v-model="filterStore.showFC"
-        />
+      <label class="checkbox-item" style="background-color: #ffb6c1">
+        <input type="checkbox" v-model="filterStore.showFC" />
         FC
       </label>
-
-      <label
-        class="checkbox-item"
-        :style="{
-          backgroundColor: getFCColor('未FC'),
-          color: getTextColor(getFCColor('未FC'))
-        }"
-      >
-        <input
-          type="checkbox"
-          v-model="filterStore.showNotFC"
-        />
+      <label class="checkbox-item" style="background-color: #ccc">
+        <input type="checkbox" v-model="filterStore.showNotFC" />
         未FC
       </label>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, watch } from 'vue'
+import { useUiStore } from '@/stores/uiStore'
+import { useFilterStore } from '@/stores/filterStore'
+import {
+  getRankColor,
+  rankDisplay,
+  NormalRankScale,
+  ExpertRankScale
+} from '@/utils/rank'
+
+const uiStore = useUiStore()
+const filterStore = useFilterStore()
+
+const mode = computed(() => uiStore.mode)
+const currentRanks = computed(() =>
+  mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
+)
+
+// ✅ 初回マウント時に全ON
+onMounted(() => {
+  filterStore.selectedRanks = [...currentRanks.value]
+  filterStore.showFC = true
+  filterStore.showNotFC = true
+})
+
+// ✅ モード切り替え時にも全ONに追従
+watch(mode, () => {
+  filterStore.selectedRanks = [...currentRanks.value]
+  filterStore.showFC = true
+  filterStore.showNotFC = true
+})
+
+// ✅ ALLボタンの状態
+const isAllChecked = computed(() =>
+  currentRanks.value.every(rank => filterStore.selectedRanks.includes(rank)) &&
+  filterStore.showFC &&
+  filterStore.showNotFC
+)
+
+function toggleRank(rank: string) {
+  const index = filterStore.selectedRanks.indexOf(rank)
+  if (index === -1) {
+    filterStore.selectedRanks.push(rank)
+  } else {
+    filterStore.selectedRanks.splice(index, 1)
+  }
+}
+
+function toggleAll() {
+  if (isAllChecked.value) {
+    filterStore.selectedRanks = []
+    filterStore.showFC = false
+    filterStore.showNotFC = false
+  } else {
+    filterStore.selectedRanks = [...currentRanks.value]
+    filterStore.showFC = true
+    filterStore.showNotFC = true
+  }
+}
+
+function getTextColor(bgColor: string): string {
+  const hex = bgColor.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness > 128 ? '#000000' : '#ffffff'
+}
+</script>
+
+
 
 <style scoped>
 .filter-panel {

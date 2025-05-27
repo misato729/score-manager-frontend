@@ -33,22 +33,26 @@ export const useAuthStore = defineStore('auth', () => {
   
 
   // ✅ 新規登録処理
-  const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
-    try {
-      await api.get('/sanctum/csrf-cookie')
-      await api.post('/register', form)
-      const res = await api.get('/user')
-      user.value = res.data
-    } catch (err: any) {
-      console.error('登録失敗:', err.response?.data || err.message)
-      user.value = null
-      throw err
-    }
+const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
+  try {
+    await api.get('/sanctum/csrf-cookie')
+    await api.post('/api/register-user', form)
+    await login({ email: form.email, password: form.password })
+    const res = await api.get('/user')
+    console.log('ログアウト直前のユーザー:', res.data)
+    user.value = res.data
+  } catch (err: any) {
+    console.error('登録失敗:', err.response?.data || err.message)
+    console.warn('すでに未認証状態です')
+    user.value = null
+    throw err
   }
+}
 
   // ✅ ログアウト処理
   const logout = async () => {
     try {
+      await api.get('/sanctum/csrf-cookie')
       await api.post('/logout')
       user.value = null
     } catch (err: any) {
@@ -56,6 +60,10 @@ export const useAuthStore = defineStore('auth', () => {
       throw err
     }
   }
+
+
+
+
 
   const fetchUser = async () => {
     try {

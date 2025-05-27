@@ -11,12 +11,13 @@ export const useScoreStore = defineStore('score', () => {
 
   // ✅ スコア一覧を取得して保存
   const loadScores = async (userId?: number) => {
-    const uid = userId ?? useAuthStore().user?.id
+    // ✅ 渡された引数を優先し、未定義時のみ authStore を参照
+    const uid = userId !== undefined ? userId : useAuthStore().user?.id
     if (!uid) {
       console.warn('loadScores: user ID が不正です')
       return
     }
-
+  
     loading.value = true
     try {
       const data = await fetchUserScores(uid)
@@ -28,6 +29,7 @@ export const useScoreStore = defineStore('score', () => {
       loading.value = false
     }
   }
+  
 
   // ✅ スコアを更新（PUTリクエスト）
   const saveScore = async (scoreId: number, data: { rank: string | null; fc: boolean }) => {

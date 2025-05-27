@@ -32,9 +32,9 @@ const props = defineProps<{
 }
 
 .tier-title {
-  font-size: 18px;
+  font-size: 30px;
   font-weight: bold;
-  margin-bottom: 16px;
+  margin-bottom: 30px;
   color: #333;
   text-align: center;
 }

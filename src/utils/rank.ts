@@ -25,7 +25,7 @@ export const RankColors: Record<string, string> = {
 }
 
 export const getRankColor = (rank: string): string => {
-  return RankColors[rank] || '#ccc'
+  return RankColors[rank] || '#f2f2f2'
 }
 
 /**
@@ -59,18 +59,6 @@ export const rankDisplay = (rank: string, mode: Mode): string => {
 
   return rank
 }
-
-/**
- * 文字列比較用（未使用化予定）
- */
-export function compareRank(a: string, b: string, mode: Mode = 'Expert'): number {
-  const scale = mode === 'Expert' ? ExpertRankScale : NormalRankScale
-  const ai = scale.indexOf(a)
-  const bi = scale.indexOf(b)
-  if (ai === -1 || bi === -1) return 0
-  return ai - bi
-}
-
 /**
  * スコア数値定義（ランク → 数値化）
  */

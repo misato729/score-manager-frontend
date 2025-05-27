@@ -3,7 +3,7 @@ import type { Score } from '@/types'
 
 // ✅ ユーザーごとのスコア一覧を取得
 export const fetchUserScores = async (userId: number): Promise<Score[]> => {
-  const response = await api.get(`/api/scores/user/${userId}`)
+  const response = await api.get(`/api/scores?user=${userId}`)
   return response.data
 }
 
@@ -12,4 +12,5 @@ export const updateScore = async (scoreId: number, data: { rank: string | null; 
     const response = await api.put(`/api/scores/${scoreId}`, data)
     return response.data
   }
+  
   

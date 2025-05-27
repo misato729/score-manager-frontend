@@ -7,6 +7,10 @@
 
     <!-- ✅ タイトル -->
     <h1 class="page-title">レベル11難易度表</h1>
+    <!-- ✅ ユーザーが存在しないときのエラーメッセージ -->
+    <div v-if="userNotFound" class="not-found-message">
+      このユーザーは存在しないか、アカウントが削除されています。
+    </div>
 
     <!-- ✅ Progress セクション -->
     <section class="card" v-if="!isGuestView">
@@ -44,6 +48,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useRouter } from 'vue-router'
+import api from '@/api/axios'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -92,13 +97,29 @@ const deleteAccount = async () => {
   if (!confirmed) return
 
   try {
-    await axios.delete(`/api/users/${auth.user?.id}`)
+    await api.get('/sanctum/csrf-cookie') // 🔑 重要：トークンを再取得
+
+    const userId = auth.user?.id
+    if (!userId) throw new Error('ユーザー情報が取得できません')
+
+    await api.delete(`/api/users/${userId}`)
+
     await auth.logout()
     router.push('/')
-  } catch (e) {
+  } catch (e: any) {
+    console.error('削除エラー:', e)
     alert('アカウント削除に失敗しました')
   }
 }
+
+// ✅ スコアデータが空で、ゲストでなく、自分でもない → 存在しないユーザー
+const userNotFound = computed(() =>
+  queryUserId.value !== null &&
+  !scoreStore.loading &&
+  scoreStore.scores.length === 0 &&
+  !isEditable.value
+)
+
 
 </script>
 
@@ -155,5 +176,12 @@ const deleteAccount = async () => {
 .danger-button:hover {
   background: #cc0000;
 }
+.not-found-message {
+  text-align: center;
+  color: #ff4d4f;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
 
 </style>

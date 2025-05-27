@@ -10,7 +10,8 @@
       <div
         class="title"
         ref="titleRef"
-        :style="{ marginTop: isLongTitle ? '24px' : '36px' }"
+        :class="{ small: isTooLongTitle }"
+        :style="{ marginTop: isTooLongTitle ? '14px' : isLongTitle ? '20px' : '28px' }"
       >
         {{ props.score.song.title }}
       </div>
@@ -56,17 +57,12 @@ const scoreStore = useScoreStore()
 const mode = computed(() => uiStore.mode)
 
 const localRank = ref(props.score.rank)
-const localFc = ref(props.score.fc)
+const localFc = ref(Boolean(props.score.fc))
 
-const isExcellent = computed(() => localRank.value === '100%')
-const isFC = computed(() => localFc.value)
-const showGlow = computed(() => isFC.value || isExcellent.value)
-const fcLocked = computed(() => isExcellent.value)
-const rankColor = computed(() => getRankColor(rankDisplay(localRank.value, mode.value)))
-
-const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
-const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
-const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : normalRanks))
+watch(() => props.score, (newScore) => {
+  localRank.value = newScore.rank
+  localFc.value = Boolean(newScore.fc)
+}, { immediate: true })
 
 watch(localRank, (newRank) => {
   if (newRank === '100%') {
@@ -74,21 +70,44 @@ watch(localRank, (newRank) => {
   }
 })
 
+const isExcellent = computed(() => localRank.value === '100%')
+const isFC = computed(() => localFc.value)
+const showGlow = computed(() => isFC.value || isExcellent.value)
+const fcLocked = computed(() => isExcellent.value)
+const rankColor = computed(() =>
+  getRankColor(rankDisplay(localRank.value, mode.value)) || '#f2f2f2'
+)
+
+const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
+const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
+const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : normalRanks))
+
 const onSave = async () => {
   await scoreStore.saveScore(props.score.id, {
     rank: localRank.value,
-    fc: localFc.value,
+    fc: localFc.value ? 1 : 0
   })
 }
 
 const titleRef = ref<HTMLElement | null>(null)
 const isLongTitle = ref(false)
+const isTooLongTitle = ref(false)
 
 const checkTitleLines = () => {
   if (titleRef.value) {
-    const lineHeight = 17
-    const lines = Math.round(titleRef.value.clientHeight / lineHeight)
+    const el = titleRef.value
+    const computedStyle = window.getComputedStyle(el)
+    const lineHeightStr = computedStyle.lineHeight
+    const fontSizeStr = computedStyle.fontSize
+
+    const lineHeight =
+      lineHeightStr === 'normal'
+        ? parseFloat(fontSizeStr) * 1.2
+        : parseFloat(lineHeightStr)
+
+    const lines = Math.round(el.clientHeight / lineHeight)
     isLongTitle.value = lines >= 3
+    isTooLongTitle.value = lines >= 4
   }
 }
 
@@ -104,15 +123,11 @@ watch(() => props.score.song.title, async () => {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  max-width: unset; 
-  min-height: unset;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   z-index: 0;
 }
-
-
 
 .card-surface {
   position: relative;
@@ -125,15 +140,21 @@ watch(() => props.score.song.title, async () => {
   flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  border: 1px solid #ccc; /* 細めのグレーの境界線 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* ソフトな影 */
 }
 
 .title {
   font-size: 20px;
   text-align: center;
-  line-height: 17px;
+  line-height: 1.2;
   font-weight: bold;
   word-break: break-word;
-  transition: margin 0.2s ease;
+  transition: margin 0.2s ease, font-size 0.2s ease;
+}
+
+.title.small {
+  font-size: 16px;
 }
 
 .bottom {
