@@ -46,7 +46,18 @@ export function getFCColor(label: string): string {
  */
 export const rankDisplay = (rank: string, mode: Mode): string => {
   const masked = ['95%', '96%', '97%', '98%', '99%', '100%']
-  return mode === 'Normal' && masked.includes(rank) ? 'AAA+' : rank
+
+  // ✅ Normalでは %ランクをすべて AAA+ にマスク
+  if (mode === 'Normal' && masked.includes(rank)) {
+    return 'AAA+'
+  }
+
+  // ✅ Expertでは AAA+ を見た目上 95% に変換
+  if (mode === 'Expert' && rank === 'AAA+') {
+    return '95%'
+  }
+
+  return rank
 }
 
 /**

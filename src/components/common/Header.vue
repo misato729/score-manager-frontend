@@ -13,10 +13,20 @@
   
         <div v-else class="user-menu" @click="toggleMenu">
           <span class="username">{{ auth.user.name }}▼</span>
-          <div v-show="menuOpen" class="dropdown">
-            <a href="#" class="dropdown-link" @click.prevent="logout">ログアウト</a>
-          </div>
+            <div v-show="menuOpen" class="dropdown">
+              <!-- ✅ 追加：自分の難易度表 -->
+              <RouterLink
+                class="dropdown-link"
+                :to="`/dashboard?user=${auth.user?.id}`"
+              >
+                マイ難易度表
+              </RouterLink>
+            
+              <!-- ✅ 既存：ログアウト -->
+              <a href="#" class="dropdown-link" @click.prevent="logout">ログアウト</a>
+            </div>
         </div>
+
       </div>
     </header>
   </template>

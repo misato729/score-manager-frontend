@@ -6,10 +6,11 @@ import Register from '@/views/Register.vue';
 import Dashboard from '@/views/Dashboard.vue';
 
 const routes = [
-  { path: '/', component: Top },
-  { path: '/login', component: Login },
-  { path: '/register', component: Register },
-  { path: '/dashboard', component: Dashboard },
+  { path: '/', name: 'Top', component: Top },
+  { path: '/login', name: 'Login', component: Login },
+  { path: '/register', name: 'Register', component: Register },
+  { path: '/dashboard', name: 'MyDashboard', component: Dashboard },
+  { path: '/dashboard/:userId', name: 'UserDashboard', component: Dashboard },
 ]
 
 export const router = createRouter({

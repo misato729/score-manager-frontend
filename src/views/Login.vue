@@ -48,12 +48,18 @@ const form = reactive({
 const onLogin = async () => {
   try {
     await auth.login(form)
-    router.push('/dashboard')
+    const userId = auth.user?.id
+    if (userId) {
+      router.push(`/dashboard?user=${userId}`)
+    } else {
+      router.push('/') // fallback
+    }
   } catch (e) {
     alert('ログインに失敗しました')
   }
 }
 </script>
+
 
 <style>
 .login-wrapper {

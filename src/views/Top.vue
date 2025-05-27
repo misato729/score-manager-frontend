@@ -20,7 +20,7 @@
       </section>
   
       <!-- ログイン・登録 -->
-      <section class="card login-card" style="max-width: 800px">
+      <section v-if="!auth.user" class="card login-card" style="max-width: 800px">
         <h2 class="title">ログイン/新規登録</h2>
         <p>以下のボタンからログインまたは新規登録をしてください。</p>
         <div class="button-row">
@@ -61,6 +61,10 @@
   
   <script setup lang="ts">
   import { RouterLink } from 'vue-router'
+  import { useAuthStore } from '@/stores/authStore'
+
+  const auth = useAuthStore()
+
   </script>
   
   <style>
