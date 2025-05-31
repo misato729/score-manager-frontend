@@ -8,14 +8,13 @@ const api = axios.create({
   },
 })
 
-// CSRFクッキー取得（初回のみ必要）
-api.get('/sanctum/csrf-cookie')
-
 api.interceptors.request.use((config) => {
   const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
   if (match && config.headers) {
     const token = decodeURIComponent(match[1])
     config.headers['X-XSRF-TOKEN'] = token
+  } else {
+    console.warn('⚠️ XSRF-TOKEN not found in cookies')
   }
   return config
 })
