@@ -8,6 +8,9 @@ const api = axios.create({
   },
 })
 
+// CSRFクッキー取得（初回のみ必要）
+api.get('/sanctum/csrf-cookie')
+
 api.interceptors.request.use((config) => {
   const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
   if (match && config.headers) {
