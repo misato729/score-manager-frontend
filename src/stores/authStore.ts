@@ -13,7 +13,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (form: { email: string; password: string; remember?: boolean }) => {
     try {
-      await api.get('/sanctum/csrf-cookie')
+      await api.get('https://score-manager-backend.onrender.com/sanctum/csrf-cookie', { withCredentials: true })
+      console.log('cookie after fetch:', document.cookie)      
       await api.post('/login', form)
       const res = await api.get('/user') // ← Breeze対応
       user.value = res.data
