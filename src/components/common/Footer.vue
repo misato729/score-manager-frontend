@@ -1,6 +1,6 @@
 <template>
     <footer>
-        <p>This is the footer component.</p>
+        <p>※当サイトはKONAMI「REFLEC BEAT Plus」の非公式ファンサイトです。KONAMI様とは一切関係ございません。</p>
     </footer>
 </template>
 

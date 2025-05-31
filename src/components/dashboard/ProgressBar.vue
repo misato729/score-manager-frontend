@@ -35,7 +35,7 @@ interface Props {
   achieved: number
   total: number
   rank?: string // optional: 現在の目標ランク（色に使う）
-  showDetail?: boolean
+  showDetail: boolean
 }
 
 const props = defineProps<Props>()
@@ -82,7 +82,7 @@ const barColor = computed(() => {
   width: 60px;
   text-align: left;
   color: #555;
-  font-size: 13px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 

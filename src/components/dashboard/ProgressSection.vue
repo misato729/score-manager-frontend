@@ -16,6 +16,7 @@
       :achieved="totalAchieved"
       :total="totalSongs"
       :rank="selectedRankForColor"
+      :showDetail="showDetail"
     />
 
     <!-- Collapse：Tier別 Progress -->

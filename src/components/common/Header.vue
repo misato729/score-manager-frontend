@@ -5,7 +5,7 @@
           <img :src="logo" alt="ロゴ" class="logo" />
         </RouterLink>
         <RouterLink to="/dashboard" class="link">難易度表</RouterLink>
-        <a href="mailto:example@example.com" class="link">お問い合わせ</a>
+        <a href="mailto:rbplus.rank.manager@gmail.com" class="link">お問い合わせ</a>
       </div>
   
       <div class="header-right">
@@ -46,7 +46,7 @@
   }
   
   const logout = async () => {
-    await auth.logout() // ← authStore に logout メソッドがある前提
+    await auth.logout() 
     menuOpen.value = false
     router.push('/')
   }

@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
 
-
+/* 全体のフォント（日本語・通常テキスト） */
 body {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
 }
-
-
