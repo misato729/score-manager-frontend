@@ -14,25 +14,30 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (form: { email: string; password: string; remember?: boolean }) => {
     try {
-      // ✅ まずCSRFトークンを取得
-      await api.get('/sanctum/csrf-cookie')
-
-      // ✅ Cookie確認ログ（開発用）
-      console.log('📦 Cookie:', document.cookie)
-      console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
-
-      // ✅ ログイン処理
-      await api.post('/login', form)
-
-      // ✅ ログイン後のユーザー情報取得（Breeze対応）
-      const res = await api.get('/user')
-      user.value = res.data
+      // ✅ CSRFトークン取得
+      const csrf = await api.get('/sanctum/csrf-cookie')
+      console.log('✅ CSRF取得:', csrf.status)
+  
+      // ✅ Cookie確認ログ
+      console.log('📦 document.cookie:', document.cookie)
+      console.log('🍪 js-cookie:', Cookies.get('XSRF-TOKEN'))
+  
+      // ✅ ログインリクエスト送信
+      const res = await api.post('/login', form)
+      console.log('✅ ログイン成功', res)
+  
+      // ✅ ログイン後のユーザー取得
+      const userRes = await api.get('/user')
+      user.value = userRes.data
+      console.log('👤 ユーザー情報取得', user.value)
+  
     } catch (err: any) {
-      console.error('ログイン失敗:', err.response?.data || err.message)
+      console.error('❌ ログイン失敗:', err.response?.data || err.message || err)
       user.value = null
       throw err
     }
   }
+  
 
   const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
     try {
