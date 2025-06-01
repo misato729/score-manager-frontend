@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/axios'
+import Cookies from 'js-cookie' // ✅ 追加！
 
 interface User {
   name: string
@@ -13,10 +14,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (form: { email: string; password: string; remember?: boolean }) => {
     try {
-      await api.get('https://score-manager-backend.onrender.com/sanctum/csrf-cookie', { withCredentials: true })
-      console.log('cookie after fetch:', document.cookie)      
+      // ✅ まずCSRFトークンを取得
+      await api.get('/sanctum/csrf-cookie')
+
+      // ✅ Cookie確認ログ（開発用）
+      console.log('📦 Cookie:', document.cookie)
+      console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
+
+      // ✅ ログイン処理
       await api.post('/login', form)
-      const res = await api.get('/user') // ← Breeze対応
+
+      // ✅ ログイン後のユーザー情報取得（Breeze対応）
+      const res = await api.get('/user')
       user.value = res.data
     } catch (err: any) {
       console.error('ログイン失敗:', err.response?.data || err.message)

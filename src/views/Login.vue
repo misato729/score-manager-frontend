@@ -47,23 +47,20 @@ const form = reactive({
 
 const onLogin = async () => {
   try {
+    // ✅ csrf-cookieを叩いてからCookie確認
+    await auth.getCsrfToken()
+
+    console.log('📦 Cookie:', document.cookie)
+    console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
+
     await auth.login(form)
     const userId = auth.user?.id
-    if (userId) {
-      router.push(`/dashboard?user=${userId}`)
-    } else {
-      router.push('/') // fallback
-    }
+    router.push(userId ? `/dashboard?user=${userId}` : '/')
   } catch (e) {
     alert('ログインに失敗しました')
   }
 }
 
-// Cookieの読み取り（テスト用）
-import Cookies from 'js-cookie'
-
-console.log('📦 Cookie:', document.cookie)
-console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
 </script>
 
 
