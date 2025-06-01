@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Score } from '@/types'
-import { fetchUserScores, updateScore } from '@/api/scoreApi'
+import { fetchUserSongScores, updateScore } from '@/api/scoreApi'
 import { useAuthStore } from './authStore'
 import Papa from 'papaparse'
 
@@ -11,8 +11,7 @@ export const useScoreStore = defineStore('score', () => {
 
   // ✅ スコア一覧を取得して保存
   const loadScores = async (userId?: number) => {
-    // ✅ 渡された引数を優先し、未定義時のみ authStore を参照
-    const uid = userId !== undefined ? userId : useAuthStore().user?.id
+    const uid = userId ?? useAuthStore().user?.id
     if (!uid) {
       console.warn('loadScores: user ID が不正です')
       return
@@ -20,11 +19,21 @@ export const useScoreStore = defineStore('score', () => {
   
     loading.value = true
     try {
-      const data = await fetchUserScores(uid)
-      scores.value = data
-      console.log(`✅ スコア取得: ${data.length}件`)
+      const raw = await fetchUserSongScores(uid)
+      scores.value = raw.map((item: any) => ({
+        id: item.score_id ?? -1 * item.song_id, // スコア未登録なら仮ID
+        user_id: uid,
+        rank: item.rank ?? '',
+        fc: item.fc ?? false,
+        song: {
+          id: item.song_id,
+          title: item.title,
+          jiriki_rank: item.jiriki_rank,
+        },
+      }))
+      console.log(`✅ 合成スコア取得: ${scores.value.length}件`)
     } catch (err) {
-      console.error('❌ スコア取得に失敗', err)
+      console.error('❌ ユーザー楽曲スコア取得に失敗', err)
     } finally {
       loading.value = false
     }
