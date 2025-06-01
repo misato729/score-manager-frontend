@@ -7,7 +7,7 @@
     <div class="song-grid">
       <SongCard
         v-for="score in scores"
-        :key="score.id"
+        :key="score.song.id"
         :score="score"
         :editable="editable"
       />
