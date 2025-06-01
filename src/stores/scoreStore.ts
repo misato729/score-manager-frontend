@@ -31,6 +31,7 @@ export const useScoreStore = defineStore('score', () => {
           jiriki_rank: item.jiriki_rank,
         },
       }))
+      .sort((a, b) => a.song.id - b.song.id)
       console.log(`✅ 合成スコア取得: ${scores.value.length}件`)
     } catch (err) {
       console.error('❌ ユーザー楽曲スコア取得に失敗', err)
