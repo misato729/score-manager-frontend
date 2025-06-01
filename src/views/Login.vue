@@ -20,7 +20,7 @@
 
         <button type="submit" class="btn login-button">ログイン</button>
       </form>
-      <p>メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。</p>
+      <p id="caution">メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。</p>
     </section>
 
     <!-- 新規登録への案内 -->
@@ -158,7 +158,7 @@ input[type="password"] {
   margin-bottom: 12px;
 }
 
-p{
+p #caution {
   font-size: 0.8rem;
 }
 </style>
