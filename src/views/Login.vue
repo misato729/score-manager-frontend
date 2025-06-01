@@ -158,7 +158,7 @@ input[type="password"] {
   margin-bottom: 12px;
 }
 
-p #caution {
+#caution {
   font-size: 0.8rem;
 }
 </style>
