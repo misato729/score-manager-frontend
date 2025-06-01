@@ -35,6 +35,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import Cookies from 'js-cookie'
 
 const router = useRouter()
 const auth = useAuthStore()
