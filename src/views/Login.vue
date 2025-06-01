@@ -58,6 +58,12 @@ const onLogin = async () => {
     alert('ログインに失敗しました')
   }
 }
+
+// Cookieの読み取り（テスト用）
+import Cookies from 'js-cookie'
+
+console.log('📦 Cookie:', document.cookie)
+console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
 </script>
 
 
