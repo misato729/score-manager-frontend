@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Score } from '@/types'
-import { fetchUserSongScores, updateScore } from '@/api/scoreApi'
+import { fetchUserSongScores, updateScore, createScore } from '@/api/scoreApi'
 import { useAuthStore } from './authStore'
 import Papa from 'papaparse'
 
@@ -43,17 +43,39 @@ export const useScoreStore = defineStore('score', () => {
   // ✅ スコアを更新（PUTリクエスト）
   const saveScore = async (scoreId: number, data: { rank: string | null; fc: boolean }) => {
     try {
-      await updateScore(scoreId, data)
-      const target = scores.value.find(s => s.id === scoreId)
-      if (target) {
-        target.rank = data.rank
-        target.fc = data.fc
+      if (scoreId < 0) {
+        // 新規スコア作成
+        const original = scores.value.find(s => s.id === scoreId)
+        if (!original) return
+  
+        const newScore = await createScore({
+          user_id: original.user_id!,
+          song_id: original.song.id,
+          rank: data.rank,
+          fc: data.fc,
+        })
+  
+        // 反映（仮IDから本物IDへ）
+        original.id = newScore.id
+        original.rank = newScore.rank
+        original.fc = newScore.fc
+  
+        console.log(`✅ 新規スコア登録`, newScore)
+      } else {
+        // 通常更新
+        await updateScore(scoreId, data)
+        const target = scores.value.find(s => s.id === scoreId)
+        if (target) {
+          target.rank = data.rank
+          target.fc = data.fc
+        }
+        console.log(`✅ スコア更新: scoreId=${scoreId}`, data)
       }
-      console.log(`✅ スコア更新: scoreId=${scoreId}`, data)
     } catch (err) {
-      console.error(`❌ スコア更新失敗: scoreId=${scoreId}`, err)
+      console.error(`❌ スコア保存失敗: scoreId=${scoreId}`, err)
     }
   }
+  
 
 const loadScoresForGuest = async () => {
     try {

@@ -13,3 +13,16 @@ export const updateScore = async (scoreId: number, data: { rank: string | null; 
     const response = await api.put(`/api/scores/${scoreId}`, data)
     return response.data
   }
+
+
+// ✅ スコアを新規作成
+export const createScore = async (data: {
+  user_id: number
+  song_id: number
+  rank: string | null
+  fc: boolean
+}) => {
+  const response = await api.post('/api/scores', data)
+  return response.data
+}
+  
