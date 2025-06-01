@@ -70,6 +70,11 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
     }
   }
+  const getCsrfToken = async () => {
+    await api.get('/sanctum/csrf-cookie')
+  }
+  
+  
 
-  return { user, login, register, logout, fetchUser }
+  return { user, login, register, logout, fetchUser, getCsrfToken  }
 })
