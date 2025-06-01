@@ -6,7 +6,7 @@
     <!-- ✅ スコアカードグリッド -->
     <div class="song-grid">
       <SongCard
-        v-for="score in scores"
+        v-for="score in [...scores].sort((a, b) => a.song.id - b.song.id)"
         :key="score.song.id"
         :score="score"
         :editable="editable"
