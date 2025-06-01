@@ -101,6 +101,7 @@ const loadScoresForGuest = async () => {
       console.error('❌ songsTable.csv の読み込み失敗', err)
       scores.value = [] // フォールバック
     }
+
   }
 
   return {

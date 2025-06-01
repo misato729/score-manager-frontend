@@ -74,7 +74,10 @@ export const useAuthStore = defineStore('auth', () => {
     await api.get('/sanctum/csrf-cookie')
   }
   
-  
+  const clear = () => {
+    user.value = null
+    localStorage.removeItem('user') // 保存してる場合
+  }
 
-  return { user, login, register, logout, fetchUser, getCsrfToken  }
+  return { user, login, register, logout, fetchUser, getCsrfToken, clear  }
 })

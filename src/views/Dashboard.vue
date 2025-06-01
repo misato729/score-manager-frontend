@@ -31,7 +31,7 @@
   </div>
   <!-- ✅ 自分のマイページのみ表示 -->
   <div v-if="isEditable" style="margin-top: 40px; text-align: center;">
-    <button @click="deleteAccount" class="danger-button">
+    <button @click="handleDelete" class="danger-button">
       アカウントを削除する
     </button>
   </div>
@@ -89,26 +89,35 @@ const totalAchieved = computed(() =>
   scoreStore.scores.filter(score => score.rank !== '').length
 )
 
-const auth = useAuthStore()
+
+// ✅ アカウント削除
 const router = useRouter()
 
-const deleteAccount = async () => {
-  const confirmed = confirm('アカウントを削除すると戻せません。本当によろしいですか？')
+const handleDelete = async () => {
+  const confirmed = confirm('アカウントを削除すると戻せません。本当に削除しますか？')
   if (!confirmed) return
 
   try {
-    await api.get('/sanctum/csrf-cookie') // 🔑 重要：トークンを再取得
+    // ✅ アカウント削除（API叩く）
+    await api.delete(`/api/users/${authStore.user?.id}`)
+    console.log('✅ アカウント削除成功')
 
-    const userId = auth.user?.id
-    if (!userId) throw new Error('ユーザー情報が取得できません')
+    // ✅ logoutは失敗する可能性があるのでtry-catch
+    try {
+      await api.post('/logout')
+    } catch (e) {
+      console.warn('⚠️ logout失敗（削除済ユーザー）:', e)
+    }
 
-    await api.delete(`/api/users/${userId}`)
+    // ✅ Vueのストアからログイン情報を初期化
+    authStore.clear()
 
-    await auth.logout()
+    // ✅ トップページに戻す
     router.push('/')
-  } catch (e: any) {
-    console.error('削除エラー:', e)
-    alert('アカウント削除に失敗しました')
+    alert('アカウントを削除しました（自動的にログアウトされます）')
+  } catch (err) {
+    console.error('❌ 削除エラー:', err)
+    alert('アカウントの削除に失敗しました')
   }
 }
 
