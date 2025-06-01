@@ -20,6 +20,7 @@
 
         <button type="submit" class="btn login-button">ログイン</button>
       </form>
+      <p>ID:test@example.com| PW: password でログイン後の使用感を体験してもかまいません。</p>
     </section>
 
     <!-- 新規登録への案内 -->
