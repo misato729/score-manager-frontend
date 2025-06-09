@@ -2,7 +2,8 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 
 const api = axios.create({
-  baseURL: 'https://api.rbplus-rank-manager.site',
+  baseURL: 'https://score-manager-backend-stg.onrender.com',
+  withXSRFToken : true,
   withCredentials: true,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
