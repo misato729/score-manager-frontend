@@ -41,13 +41,15 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { debounce } from 'lodash'
 import ModeSwitch from '@/components/common/ModeSwitch.vue'
 import ProgressSection from '@/components/dashboard/ProgressSection.vue'
 import TierSection from '@/components/dashboard/TierSection.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useScoreStore } from '@/stores/scoreStore'
-import { useRouter } from 'vue-router'
+import { updateTarget } from '@/api/userApi'
 import api from '@/api/axios'
 
 const route = useRoute()
@@ -129,6 +131,43 @@ const userNotFound = computed(() =>
   !isEditable.value
 )
 
+// ✅ モード変更＆target保存のdebounced関数
+const expertRanks = ['95%', '96%', '97%', '98%', '99%', '100%']
+const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
+  if (target && expertRanks.includes(target)) {
+    uiStore.setMode('Expert')
+    if (import.meta.env.DEV) {
+      console.log(`✅ [DEV] Expertモードに切り替え（target: ${target}）`)
+    }
+  } else {
+    uiStore.setMode('Normal')
+    if (import.meta.env.DEV) {
+      console.log(`✅ [DEV] Normalモードに切り替え（target: ${target}）`)
+    }
+  }
+
+  if (target) {
+    try {
+      await updateTarget(target)
+      if (import.meta.env.DEV) {
+        console.log(`✅ [DEV] target更新成功（API保存完了）: ${target}`)
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('❌ [DEV] target更新失敗（APIエラー）:', error)
+      }
+    }
+  }
+}, 300)
+
+// ✅ targetを監視して変更時に処理
+watch(
+  () => authStore.user?.target,
+  (newTarget) => {
+    applyModeAndSaveTarget(newTarget)
+  },
+  { immediate: true }
+)
 
 </script>
 

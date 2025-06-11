@@ -38,8 +38,9 @@
 <script setup lang="ts">
 import RankSelect from '@/components/filter/RankSelect.vue'
 import ProgressBar from '@/components/dashboard/ProgressBar.vue'
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
+import { updateTarget } from '@/api/userApi'
 import { rankDisplay, isRankGreaterOrEqual } from '@/utils/rank'
 import type { Score } from '@/types'
 
@@ -90,6 +91,14 @@ const jirikiProgress = computed(() =>
 const percentDisplay = computed(() => {
   if (totalSongs.value === 0) return '0%'
   return `${Math.round((totalAchieved.value / totalSongs.value) * 100)}%`
+})
+
+watchEffect(() => {
+  if (selectedRank.value) {
+    updateTarget(selectedRank.value).catch((error) => {
+      console.error('ランク保存失敗:', error)
+    })
+  }
 })
 </script>
 
