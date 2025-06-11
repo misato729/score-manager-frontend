@@ -1,3 +1,4 @@
+// src/stores/scoreStore.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Score } from '@/types'
@@ -13,10 +14,12 @@ export const useScoreStore = defineStore('score', () => {
   const loadScores = async (userId?: number) => {
     const uid = userId ?? useAuthStore().user?.id
     if (!uid) {
-      console.warn('loadScores: user ID が不正です')
+      if (import.meta.env.DEV) {
+        console.warn('loadScores: user ID が不正です')
+      }
       return
     }
-  
+
     loading.value = true
     try {
       const raw = await fetchUserSongScores(uid)
@@ -32,14 +35,17 @@ export const useScoreStore = defineStore('score', () => {
         },
       }))
       .sort((a, b) => a.song.id - b.song.id)
-      console.log(`✅ 合成スコア取得: ${scores.value.length}件`)
+      if (import.meta.env.DEV) {
+        console.log(`✅ 合成スコア取得: ${scores.value.length}件`)
+      }
     } catch (err) {
-      console.error('❌ ユーザー楽曲スコア取得に失敗', err)
+      if (import.meta.env.DEV) {
+        console.error('❌ ユーザー楽曲スコア取得に失敗', err)
+      }
     } finally {
       loading.value = false
     }
   }
-  
 
   // ✅ スコアを更新（PUTリクエスト）
   const saveScore = async (scoreId: number, data: { rank: string | null; fc: boolean }) => {
@@ -48,20 +54,22 @@ export const useScoreStore = defineStore('score', () => {
         // 新規スコア作成
         const original = scores.value.find(s => s.id === scoreId)
         if (!original) return
-  
+
         const newScore = await createScore({
           user_id: original.user_id!,
           song_id: original.song.id,
           rank: data.rank,
           fc: data.fc,
         })
-  
+
         // 反映（仮IDから本物IDへ）
         original.id = newScore.id
         original.rank = newScore.rank
         original.fc = newScore.fc
-  
-        console.log(`✅ 新規スコア登録`, newScore)
+
+        if (import.meta.env.DEV) {
+          console.log(`✅ 新規スコア登録`, newScore)
+        }
       } else {
         // 通常更新
         await updateScore(scoreId, data)
@@ -70,23 +78,26 @@ export const useScoreStore = defineStore('score', () => {
           target.rank = data.rank
           target.fc = data.fc
         }
-        console.log(`✅ スコア更新: scoreId=${scoreId}`, data)
+        if (import.meta.env.DEV) {
+          console.log(`✅ スコア更新: scoreId=${scoreId}`, data)
+        }
       }
     } catch (err) {
-      console.error(`❌ スコア保存失敗: scoreId=${scoreId}`, err)
+      if (import.meta.env.DEV) {
+        console.error(`❌ スコア保存失敗: scoreId=${scoreId}`, err)
+      }
     }
   }
-  
 
-const loadScoresForGuest = async () => {
+  const loadScoresForGuest = async () => {
     try {
       const res = await fetch('/songsTable.csv')
       const csv = await res.text()
       const parsed = Papa.parse(csv, { header: true }).data as Song[]
-  
+
       // 仮の Score[] に変換
       scores.value = parsed.map((song, index) => ({
-        id: -1 * (index + 1),      // 仮の一意なマイナスID
+        id: -1 * (index + 1),
         song: {
           id: Number(song.id),
           title: song.title,
@@ -96,13 +107,16 @@ const loadScoresForGuest = async () => {
         rank: '',
         fc: false,
       }))
-  
-      console.log('✅ ゲスト用スコア読み込み完了:', scores.value.length, '曲')
-    } catch (err) {
-      console.error('❌ songsTable.csv の読み込み失敗', err)
-      scores.value = [] // フォールバック
-    }
 
+      if (import.meta.env.DEV) {
+        console.log('✅ ゲスト用スコア読み込み完了:', scores.value.length, '曲')
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error('❌ songsTable.csv の読み込み失敗', err)
+      }
+      scores.value = []
+    }
   }
 
   return {
@@ -110,8 +124,6 @@ const loadScoresForGuest = async () => {
     loading,
     loadScores,
     saveScore,
-    loadScoresForGuest
+    loadScoresForGuest,
   }
 })
-
-  
