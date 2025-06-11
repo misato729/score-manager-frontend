@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/axios'
-import Cookies from 'js-cookie' // ✅ 追加！
+import Cookies from 'js-cookie'
 
 interface User {
   name: string
@@ -16,36 +16,43 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // ✅ CSRFトークン取得
       const csrf = await api.get('/sanctum/csrf-cookie')
-      console.log('✅ CSRF取得:', csrf.status)
-  
-      // ✅ Cookie確認ログ
-      console.log('📦 document.cookie:', document.cookie)
-      console.log('🍪 js-cookie:', Cookies.get('XSRF-TOKEN'))
-  
+      if (import.meta.env.DEV) {
+        console.log('✅ CSRF取得:', csrf.status)
+        console.log('📦 document.cookie:', document.cookie)
+        console.log('🍪 js-cookie:', Cookies.get('XSRF-TOKEN'))
+      }
+
       // ✅ ログインリクエスト送信
       const res = await api.post('/login', form)
-      console.log('✅ ログイン成功', res)
-  
+      if (import.meta.env.DEV) {
+        console.log('✅ ログイン成功', res)
+      }
+
       // ✅ ログイン後のユーザー取得
       const userRes = await api.get('/user')
       user.value = userRes.data
-      console.log('👤 ユーザー情報取得', user.value)
-  
+      if (import.meta.env.DEV) {
+        console.log('👤 ユーザー情報取得', user.value)
+      }
+
     } catch (err: any) {
-      console.error('❌ ログイン失敗:', err.response?.data || err.message || err)
+      if (import.meta.env.DEV) {
+        console.error('❌ ログイン失敗:', err.response?.data || err.message || err)
+      }
       user.value = null
       throw err
     }
   }
-  
 
   const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
     try {
       await api.get('/sanctum/csrf-cookie')
       await api.post('/api/register-user', form)
-      await login({ email: form.email, password: form.password }) // ← loginに任せる
+      await login({ email: form.email, password: form.password })
     } catch (err: any) {
-      console.error('登録失敗:', err.response?.data || err.message)
+      if (import.meta.env.DEV) {
+        console.error('登録失敗:', err.response?.data || err.message)
+      }
       user.value = null
       throw err
     }
@@ -57,7 +64,9 @@ export const useAuthStore = defineStore('auth', () => {
       await api.post('/logout')
       user.value = null
     } catch (err: any) {
-      console.error('ログアウト失敗:', err.response?.data || err.message)
+      if (import.meta.env.DEV) {
+        console.error('ログアウト失敗:', err.response?.data || err.message)
+      }
       throw err
     }
   }
@@ -70,14 +79,15 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
     }
   }
+
   const getCsrfToken = async () => {
     await api.get('/sanctum/csrf-cookie')
   }
-  
+
   const clear = () => {
     user.value = null
-    localStorage.removeItem('user') // 保存してる場合
+    localStorage.removeItem('user')
   }
 
-  return { user, login, register, logout, fetchUser, getCsrfToken, clear  }
+  return { user, login, register, logout, fetchUser, getCsrfToken, clear }
 })
