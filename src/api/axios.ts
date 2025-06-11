@@ -1,3 +1,4 @@
+// src/api/axios.ts
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
@@ -10,15 +11,20 @@ const api = axios.create({
   },
 })
 
-// ✅ インターセプターで XSRF-TOKEN を常に送信
+// ✅ インターセプターで XSRF-TOKEN を常に送信（開発環境のみログ出力）
 api.interceptors.request.use((config) => {
   const token = Cookies.get('XSRF-TOKEN')
 
   if (token && config.headers) {
     config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token)
-    console.log('✅ X-XSRF-TOKEN sent:', config.headers['X-XSRF-TOKEN'])
+    
+    if (import.meta.env.DEV) {
+      console.log('✅ X-XSRF-TOKEN sent:', config.headers['X-XSRF-TOKEN'])
+    }
   } else {
-    console.warn('⚠️ XSRF-TOKEN not found or unreadable')
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ XSRF-TOKEN not found or unreadable')
+    }
   }
 
   return config
