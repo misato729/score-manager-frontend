@@ -1,5 +1,5 @@
 <template>
-    <div class="top-wrapper">
+  <div class="top-wrapper">
       <!-- サイト紹介セクション -->
       <header class="page-title">
       <h1>REFLEC BEAT plus レベル11</h1>
@@ -56,8 +56,46 @@
       </p>
     </section>
 
-    </div>
-  </template>
+    <section class="card privacy-policy-card" style="max-width: 800px">
+      <h2 class="title pink">プライバシーポリシー</h2>
+      <p>
+        当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、Googleによる第三者配信の広告サービス「Google AdSense（グーグルアドセンス）」を利用しています。
+      </p>
+      <p>
+        Googleを含む第三者広告配信事業者は、ユーザーの興味に応じた広告を表示するために、Cookieなどの技術を使用することがあります。これにより当サイトや他サイトへのアクセス情報に基づいた広告が表示されます。
+      </p>
+      <p>
+        なお、取得される情報には氏名、住所、メールアドレス、電話番号などの個人を特定できる情報は一切含まれません。
+      </p>
+      <p>
+        GoogleによるCookieの取り扱いなど詳細は、以下のページをご確認ください：<br />
+        👉 <a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener">Googleの広告に関するポリシー</a>
+      </p>
+      <p>
+        広告のパーソナライズを無効にしたい場合は、下記リンクより設定変更が可能です：<br />
+        👉 <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener">Google広告設定ページ</a><br />
+        また、<a href="https://www.aboutads.info/" target="_blank" rel="noopener">www.aboutads.info</a> でも無効化の手続きが可能です。
+      </p>
+      <p>
+        当サイトではアクセス解析ツールを使用する場合がありますが、収集される情報は匿名であり、個人を特定するものではありません。
+      </p>
+      <p>
+        ご不明な点がありましたら、以下のメールアドレスまでご連絡ください。<br />
+        rbplus.rank.manager@gmail.com
+      </p>
+    </section>
+
+
+    <!-- 更新履歴 -->
+    <section class="card update-card" style="max-width: 800px">
+      <h2 class="title purple">更新履歴</h2>
+      <ul>
+        <li>ver.2025.06.01 : 本サイトをリリースしました。/li>
+        <li>ver.2025.06.15 : 目標ランクを保存して次回以降自動でその値が選ばれる仕様に修正しました。</li>
+    </section>
+
+  </div>
+</template>
   
   <script setup lang="ts">
   import { RouterLink } from 'vue-router'
