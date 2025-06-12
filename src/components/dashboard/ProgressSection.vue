@@ -121,6 +121,21 @@ watch(
   },
   { immediate: false }
 )
+
+watch(
+  () => route.query.user?.toString(),
+  (userId) => {
+    const loginUserId = authStore.user?.id?.toString()
+    if (userId === loginUserId && authStore.user?.target) {
+      uiStore.selectedRank = authStore.user.target
+      if (import.meta.env.DEV) {
+        console.log(`✅ [DEV] 自分のページに戻ったので target を再設定: ${authStore.user.target}`)
+      }
+    }
+  },
+  { immediate: true }
+)
+
 </script>
 
 
