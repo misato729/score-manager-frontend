@@ -90,7 +90,7 @@
     <section class="card update-card" style="max-width: 800px">
       <h2 class="title purple">更新履歴</h2>
       <ul>
-        <li>ver.2025.06.01 : 本サイトをリリースしました。/li>
+        <li>ver.2025.06.01 : 本サイトをリリースしました。</li>
         <li>ver.2025.06.15 : 目標ランクを保存して次回以降自動でその値が選ばれる仕様に修正しました。</li>
     </section>
 
