@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import RankSelect from '@/components/filter/RankSelect.vue'
 import ProgressBar from '@/components/dashboard/ProgressBar.vue'
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
 import { updateTarget } from '@/api/userApi'
 import { rankDisplay, isRankGreaterOrEqual } from '@/utils/rank'
@@ -93,13 +93,22 @@ const percentDisplay = computed(() => {
   return `${Math.round((totalAchieved.value / totalSongs.value) * 100)}%`
 })
 
-watchEffect(() => {
-  if (selectedRank.value) {
-    updateTarget(selectedRank.value).catch((error) => {
-      console.error('ランク保存失敗:', error)
-    })
+watch(
+  () => uiStore.selectedRank,
+  (newRank) => {
+    if (newRank) {
+      updateTarget(newRank)
+        .then(() => {
+          if (import.meta.env.DEV) {
+            console.log('✅ [DEV] target更新成功（API保存完了）:', newRank)
+          }
+        })
+        .catch((error) => {
+          console.error('ランク保存失敗:', error)
+        })
+    }
   }
-})
+)
 </script>
 
 <style scoped>
