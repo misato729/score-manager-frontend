@@ -134,7 +134,10 @@ const userNotFound = computed(() =>
 // ✅ モード変更＆target保存のdebounced関数
 const expertRanks = ['95%', '96%', '97%', '98%', '99%', '100%']
 const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
-  if (target && expertRanks.includes(target)) {
+  if (!target) return
+
+  // ✅ モード切り替え
+  if (expertRanks.includes(target)) {
     uiStore.setMode('Expert')
     if (import.meta.env.DEV) {
       console.log(`✅ [DEV] Expertモードに切り替え（target: ${target}）`)
@@ -146,16 +149,21 @@ const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
     }
   }
 
-  if (target) {
-    try {
-      await updateTarget(target)
-      if (import.meta.env.DEV) {
-        console.log(`✅ [DEV] target更新成功（API保存完了）: ${target}`)
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ [DEV] target更新失敗（APIエラー）:', error)
-      }
+  // ✅ selectedRank に反映
+  uiStore.selectedRank = target
+  if (import.meta.env.DEV) {
+    console.log(`✅ [DEV] selectedRank に設定: ${target}`)
+  }
+
+  // ✅ APIに保存（ログイン時のみ）
+  try {
+    await updateTarget(target)
+    if (import.meta.env.DEV) {
+      console.log(`✅ [DEV] target更新成功（API保存完了）: ${target}`)
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('❌ [DEV] target更新失敗（APIエラー）:', error)
     }
   }
 }, 300)
