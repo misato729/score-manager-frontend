@@ -93,21 +93,29 @@ const percentDisplay = computed(() => {
   return `${Math.round((totalAchieved.value / totalSongs.value) * 100)}%`
 })
 
+const isMyPage = computed(() => {
+  const paramUserId = route.query.user?.toString()
+  const loginUserId = authStore.user?.id?.toString()
+  return paramUserId === loginUserId
+})
+
+// ✅ 自分のページのときだけ selectedRank を監視して更新
 watch(
   () => uiStore.selectedRank,
   (newRank) => {
-    if (newRank) {
+    if (isMyPage.value && newRank) {
       updateTarget(newRank)
         .then(() => {
           if (import.meta.env.DEV) {
-            console.log('✅ [DEV] target更新成功（API保存完了）:', newRank)
+            console.log(`✅ [DEV] target更新成功: ${newRank}`)
           }
         })
-        .catch((error) => {
-          console.error('ランク保存失敗:', error)
+        .catch((e) => {
+          console.error('❌ target更新失敗:', e)
         })
     }
-  }
+  },
+  { immediate: false }
 )
 </script>
 
