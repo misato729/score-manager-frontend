@@ -3,9 +3,9 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 
 const api = axios.create({
-  baseURL:'https://rbplus-rank-manager.site', // import.meta.env.VITE_API_URL,127.0.0.1:8000 だと動かない
+  baseURL:'https://api.rbplus-rank-manager.site', // import.meta.env.VITE_API_URL,127.0.0.1:8000 だと動かない
   // 開発用：http://localhost:8000
-  // 本番用：https://rbplus-rank-manager.site
+  // 本番用：https://api.rbplus-rank-manager.site
   withCredentials: true,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
