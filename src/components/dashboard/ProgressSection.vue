@@ -40,6 +40,8 @@ import RankSelect from '@/components/filter/RankSelect.vue'
 import ProgressBar from '@/components/dashboard/ProgressBar.vue'
 import { ref, computed, watch } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useRoute } from 'vue-router'
 import { updateTarget } from '@/api/userApi'
 import { rankDisplay, isRankGreaterOrEqual } from '@/utils/rank'
 import type { Score } from '@/types'
@@ -51,6 +53,8 @@ const props = defineProps<{
 
 const showDetail = ref(false)
 const uiStore = useUiStore()
+const authStore = useAuthStore()
+const route = useRoute()
 
 const mode = computed(() => uiStore.mode)
 const selectedRank = computed(() => uiStore.selectedRank)
@@ -59,7 +63,7 @@ const selectedRankForColor = computed(() => selectedRank.value)
 // ✅ AAA+ は Expert では見た目 95% に変換して比較対象にする
 const selectedRankRaw = computed(() => {
   return mode.value === 'Normal' && selectedRank.value === 'AAA+'
-    ? '95%' // ← データ的に比較されるのはこちら
+    ? '95%'
     : selectedRank.value
 })
 
@@ -71,7 +75,6 @@ const isAchieved = (s: Score): boolean => {
 // ✅ 地力ランク一覧
 const jirikiTiers = ['S+', 'S', 'A+', 'A', 'B+', 'B', 'C', 'D', 'E', 'F']
 
-// ✅ 全体・Tier別進捗（フィルター非依存）
 const baseSongs = computed(() => props.allSongs)
 
 const totalAchieved = computed(() => baseSongs.value.filter(isAchieved).length)
@@ -93,13 +96,14 @@ const percentDisplay = computed(() => {
   return `${Math.round((totalAchieved.value / totalSongs.value) * 100)}%`
 })
 
+// ✅ 自分のページのときだけ更新を許可
 const isMyPage = computed(() => {
   const paramUserId = route.query.user?.toString()
   const loginUserId = authStore.user?.id?.toString()
   return paramUserId === loginUserId
 })
 
-// ✅ 自分のページのときだけ selectedRank を監視して更新
+// ✅ 自分のページのときだけ target を保存
 watch(
   () => uiStore.selectedRank,
   (newRank) => {
@@ -118,6 +122,7 @@ watch(
   { immediate: false }
 )
 </script>
+
 
 <style scoped>
 .progress-section {
