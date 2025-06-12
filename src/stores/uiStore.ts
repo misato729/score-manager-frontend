@@ -8,7 +8,7 @@ export const useUiStore = defineStore('ui', () => {
   // ✅ グローバルUI状態
   const mode = ref<Mode>('Normal') // 'Normal' or 'Expert'
   const editMode = ref(false)      // 編集モードON/OFF
-  const selectedRank = ref<Rank>('AAA') // 目標ランク
+  const selectedRank = ref<Rank>('AAA+') // 目標ランク
 
   // ✅ getter：モードが Expert かどうか
   const isExpertMode = computed(() => mode.value === 'Expert')
