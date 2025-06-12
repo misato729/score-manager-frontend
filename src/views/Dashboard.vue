@@ -168,11 +168,20 @@ const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
   }
 }, 300)
 
-// ✅ targetを監視して変更時に処理
+// ✅ 自分のページかどうかを判定
+const isMyPage = computed(() => {
+  const paramUserId = route.query.user?.toString()
+  const loginUserId = authStore.user?.id?.toString()
+  return paramUserId === loginUserId
+})
+
+// ✅ targetを監視：自分のページのときだけ反映
 watch(
   () => authStore.user?.target,
   (newTarget) => {
-    applyModeAndSaveTarget(newTarget)
+    if (isMyPage.value) {
+      applyModeAndSaveTarget(newTarget)
+    }
   },
   { immediate: true }
 )
