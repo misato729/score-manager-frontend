@@ -56,7 +56,8 @@
       </p>
     </section>
 
-    <section class="card privacy-policy-card" style="max-width: 800px">
+    <!-- プライバシーポリシー -->
+    <section class="card caution-card" style="max-width: 800px">
       <h2 class="title pink">プライバシーポリシー</h2>
       <p>
         当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、Googleによる第三者配信の広告サービス「Google AdSense（グーグルアドセンス）」を利用しています。
@@ -68,20 +69,19 @@
         なお、取得される情報には氏名、住所、メールアドレス、電話番号などの個人を特定できる情報は一切含まれません。
       </p>
       <p>
-        GoogleによるCookieの取り扱いなど詳細は、以下のページをご確認ください：<br />
-        👉 <a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener">Googleの広告に関するポリシー</a>
+        GoogleによるCookieの取り扱いなど詳細は、以下のページをご確認ください。<br />
+        <a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener">Googleの広告に関するポリシー</a>
       </p>
       <p>
-        広告のパーソナライズを無効にしたい場合は、下記リンクより設定変更が可能です：<br />
-        👉 <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener">Google広告設定ページ</a><br />
-        また、<a href="https://www.aboutads.info/" target="_blank" rel="noopener">www.aboutads.info</a> でも無効化の手続きが可能です。
+        広告のパーソナライズを無効にしたい場合は、下記リンクより設定変更が可能です。<br />
+        <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener">Google広告設定ページ</a><br />
       </p>
       <p>
         当サイトではアクセス解析ツールを使用する場合がありますが、収集される情報は匿名であり、個人を特定するものではありません。
       </p>
       <p>
         ご不明な点がありましたら、以下のメールアドレスまでご連絡ください。<br />
-        rbplus.rank.manager@gmail.com
+        <a href="mailto:rbplus.rank.manager@gmail.com" class="link">rbplus.rank.manager@gmail.com</a>
       </p>
     </section>
 
