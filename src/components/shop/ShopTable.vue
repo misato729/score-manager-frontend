@@ -36,7 +36,7 @@
   </template>
   
   <script setup lang="ts">
-  import type { Shop } from '@/utils/shopUtils'
+  import type { Shop } from '@/types'
   
   defineProps<{
     shops: Shop[]

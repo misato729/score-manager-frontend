@@ -1,17 +1,5 @@
 import Papa from 'papaparse'
 
-export interface Shop {
-  id: number
-  name: string
-  address: string
-  price: number
-  number_of_machine: number
-  description: string
-  lat: number
-  lng: number
-  isOpen: boolean
-}
-
 export const extractPrefecture = (address: string): string => {
   const match = address.match(/^.{2,3}(都|道|府|県)/)
   return match ? match[0] : '不明'

@@ -48,8 +48,8 @@
     extractPrefecture,
     getDistance,
     loadShopsFromCSV,
-    type Shop,
   } from '@/utils/shop'
+    import type { Shop } from '@/types'
   
   // ------------------------
   // 📌 State

@@ -13,7 +13,7 @@
   </template>
   
   <script setup lang="ts">
-  import type { Shop } from '@/utils/shop'
+  import type { Shop } from '@/types';
   
   defineProps<{
     shop: Shop

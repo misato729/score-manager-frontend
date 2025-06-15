@@ -19,3 +19,15 @@ export interface Score {
   updated_at: string
   song: Song
 }
+
+export interface Shop {
+  id: number
+  name: string
+  address: string
+  price: number
+  number_of_machine: number
+  description: string
+  lat: number
+  lng: number
+  isOpen: boolean
+}
