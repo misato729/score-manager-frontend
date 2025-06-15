@@ -61,18 +61,21 @@
   
   // CSV読み込み処理
   onMounted(() => {
-    Papa.parse('public/songsTable.csv', {
-      header: true,
-      download: true,
-      complete: (results) => {
-        // IDを数値に変換して整形
-        songs.value = (results.data as Song[]).map((s) => ({
-          ...s,
+  Papa.parse('/songsTable.csv', {
+    header: true,
+    download: true,
+    complete: (results) => {
+      songs.value = (results.data as any[])
+        .filter((s) => s.id && s.title && s.jiriki_rank)
+        .map((s) => ({
           id: Number(s.id),
+          title: s.title,
+          jiriki_rank: s.jiriki_rank,
         }))
-      },
-    })
+    },
   })
+})
+
   
   const filteredSongs = computed(() => {
     return songs.value.filter((song) => {
