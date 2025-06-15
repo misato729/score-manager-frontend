@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import FilterPanel from '@/components/filter/FilterPanel.vue'
+import FilterPanel from '@/components/dashboard/FilterPanel.vue'
 import JirikiSection from '@/components/dashboard/JirikiSection.vue'
 import { useFilterStore } from '@/stores/filterStore'
 import { useUiStore } from '@/stores/uiStore'

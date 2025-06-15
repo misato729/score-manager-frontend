@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import RankSelect from '@/components/filter/RankSelect.vue'
+import RankSelect from '@/components/dashboard/RankSelect.vue'
 import ProgressBar from '@/components/dashboard/ProgressBar.vue'
 import { ref, computed, watch } from 'vue'
 import { useUiStore } from '@/stores/uiStore'

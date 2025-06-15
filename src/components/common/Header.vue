@@ -4,8 +4,10 @@
         <RouterLink to="/">
           <img :src="logo" alt="ロゴ" class="logo" />
         </RouterLink>
+        <RouterLink to="/songlist" class="link">楽曲一覧</RouterLink>
         <RouterLink to="/dashboard" class="link">難易度表</RouterLink>
-        <a href="mailto:rbplus.rank.manager@gmail.com" class="link">お問い合わせ</a>
+        <RouterLink to="/shops" class="link">設置店舗</RouterLink>
+        <RouterLink to="/inquiry" class="link">お問い合わせ</RouterLink>
       </div>
   
       <div class="header-right">
@@ -14,15 +16,19 @@
         <div v-else class="user-menu" @click="toggleMenu">
           <span class="username">{{ auth.user.name }}▼</span>
             <div v-show="menuOpen" class="dropdown">
-              <!-- ✅ 追加：自分の難易度表 -->
               <RouterLink
                 class="dropdown-link"
                 :to="`/dashboard?user=${auth.user?.id}`"
               >
                 マイ難易度表
               </RouterLink>
-            
-              <!-- ✅ 既存：ログアウト -->
+              <RouterLink
+                class="dropdown-link"
+                :to="`/visited_shops?user=${auth.user?.id}`"
+              >
+                行脚履歴
+              </RouterLink>
+              
               <a href="#" class="dropdown-link" @click.prevent="logout">ログアウト</a>
             </div>
         </div>
