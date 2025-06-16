@@ -3,6 +3,15 @@ import { NormalRankScale, ExpertRankScale } from '@/utils/rank'
 export type Mode = 'Normal' | 'Expert'
 export type Rank = typeof NormalRankScale[number] | typeof ExpertRankScale[number]
 
+export interface User {
+  id: number
+  name: string
+  email: string
+  target: Rank
+  created_at: string
+  updated_at: string
+}
+
 export interface Song {
   id: number
   title: string
