@@ -55,9 +55,8 @@ const onLogin = async () => {
     console.log('📦 Cookie:', document.cookie)
     console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
 
-    await auth.login(form)
-    const userId = auth.user?.id
-    router.push(userId ? `/dashboard?user=${userId}` : '/')
+    const user = await auth.login(form) // ← user を返すようにする
+    router.push(`/dashboard?user=${user.id}`) // ← 安全に id を取得
   } catch (e) {
     alert('ログインに失敗しました')
   }
