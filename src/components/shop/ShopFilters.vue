@@ -21,9 +21,6 @@
             </option>
           </select>
         </label>
-  
-        <!-- 現在地検索ボタン -->
-        <button @click="$emit('search-nearby')" class="search-btn">📍 近くの店舗を検索</button>
       </div>
     </section>
   </template>
@@ -55,16 +52,6 @@
     border-radius: 4px;
     flex: 1;
     min-width: 200px;
-  }
-  
-  .search-btn {
-    padding: 6px 12px;
-    background-color: #59aaff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
   }
   </style>
   

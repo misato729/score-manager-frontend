@@ -5,6 +5,7 @@
         :zoom="11"
         style="width: 100%; height: 600px"
         @bounds_changed="$emit('map-ready')"
+        :options="mapOptions"
       >
         <!-- 現在地マーカー -->
         <GMapMarker
@@ -30,8 +31,7 @@
           </template>
         </GMapMarker>
       </GMapMap>
-  
-      <!-- 現在地ボタン -->
+      <!-- 現在地検索ボタン -->
       <button @click="$emit('move-center')" class="locate-btn">📍 現在地</button>
     </section>
   </template>
@@ -54,6 +54,15 @@
     (e: 'record-visit', shopId: number): void
     (e: 'map-ready'): void
   }>()
+
+  const mapOptions = {
+  fullscreenControl: true,
+  zoomControl: true,
+  mapTypeControl: false,
+  streetViewControl: false,
+  gestureHandling: 'greedy',
+}
+
   
   function onRecordVisit(shopId: number) {
     emit('record-visit', shopId)
@@ -62,9 +71,10 @@
   
   <style scoped>
   .locate-btn {
-    position: absolute;
-    top: 740px;
-    right: 60px;
+    position: absolute;         /* ← 必須！ */
+    bottom: 50px;               /* 下から20px */
+    right: 80px;                /* 右から20px */
+
     z-index: 10;
     background: white;
     border: 1px solid #ccc;

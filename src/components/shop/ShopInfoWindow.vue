@@ -5,9 +5,9 @@
         📍 {{ shop.address }}<br />
         🎮 {{ shop.price }}円 / 🕹️ {{ shop.number_of_machine }}台<br />
         {{ shop.description }}<br />
-        <!-- <div v-if="isNear" style="margin-top: 10px;">
+        <div v-if="isNear" style="margin-top: 10px;">
           <button @click="$emit('record')">✅ この店舗に行脚記録をつける</button>
-        </div> -->
+        </div>
       </div>
     </GMapInfoWindow>
   </template>

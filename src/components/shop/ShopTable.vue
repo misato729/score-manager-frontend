@@ -1,6 +1,9 @@
 <template>
     <section class="card" style="max-width: 1000px;">
-      <h2 class="title">設置店舗一覧</h2>
+      <div class="head-container">
+        <h2 class="title">設置店舗一覧</h2>
+        <button @click="$emit('search-nearby')" class="search-btn">📍 近くの店舗を検索</button>
+      </div>
       <table class="shop-table">
         <thead>
           <tr>
@@ -44,9 +47,25 @@
     isVisited: (shopId: number) => boolean
     hasLocation: boolean
   }>()
+  
   </script>
   
   <style scoped>
+  .head-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .search-btn {
+    padding: 6px 12px;
+    background-color: #59aaff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
   .shop-table {
     width: 100%;
     border-collapse: collapse;

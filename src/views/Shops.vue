@@ -41,13 +41,13 @@
   // 🔧 Imports
   // ------------------------
   import { ref, nextTick, computed, onMounted } from 'vue'
+  import api from '@/api/axios'
   import ShopFilters from '@/components/shop/ShopFilters.vue'
   import ShopMap from '@/components/shop/ShopMap.vue'
   import ShopTable from '@/components/shop/ShopTable.vue'
   import {
     extractPrefecture,
     getDistance,
-    loadShopsFromCSV,
   } from '@/utils/shop'
     import type { Shop } from '@/types'
   
@@ -72,11 +72,17 @@
   // ------------------------
   // 📦 Initial Load
   // ------------------------
-  onMounted(async () => {
-    moveToCurrentLocation()
-    shops.value = await loadShopsFromCSV()
-  })
-  
+onMounted(async () => {
+  moveToCurrentLocation()
+  try {
+    const res = await api.get('/api/shops')
+    shops.value = res.data
+  } catch (err) {
+    alert('❌ 店舗情報の取得に失敗しました')
+    console.error(err)
+  }
+})
+
   // ------------------------
   // 🗺️ Map / Marker
   // ------------------------
@@ -136,10 +142,27 @@
   function isVisited(id: number): boolean {
     return visitedShopIds.value.includes(id)
   }
-  
-  function recordVisit(id: number) {
-    if (!visitedShopIds.value.includes(id)) visitedShopIds.value.push(id)
+
+
+async function recordVisit(shopId: number) {
+  try {
+    const res = await api.post('/api/visit', { shop_id: shopId })
+
+    alert('✅ 行脚しました！')
+
+    if (!visitedShopIds.value.includes(shopId)) {
+      visitedShopIds.value.push(shopId)
+    }
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      alert('⚠️ すでに行脚済みです')
+    } else {
+      alert('❌ 行脚に失敗しました')
+      console.error(err)
+    }
   }
+}
+
   
   function handleMarkerClick(shop: Shop) {
     shops.value.forEach((s) => (s.isOpen = false))

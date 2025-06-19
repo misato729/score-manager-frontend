@@ -1,9 +1,8 @@
 <template>
     <div class="visited-shops">
       <h1>行脚店舗一覧</h1>
-      <h2>Coming Soon ...</h2>
   
-      <!-- <table class="visited-table" v-if="visitedList.length > 0">
+      <table class="visited-table" v-if="visitedList.length > 0">
         <thead>
           <tr>
             <th>都道府県</th>
@@ -20,7 +19,7 @@
         </tbody>
       </table>
   
-      <p v-else>訪問記録がありません。</p> -->
+      <p v-else>訪問記録がありません。</p>
     </div>
   </template>
   
