@@ -33,7 +33,9 @@
         :isVisited="isVisited"
         :hasLocation="!!currentPosition"
         @search-nearby="searchNearby"
+        @row-click="handleRowClick"
       />
+
     </div>
   </template>
   
@@ -187,7 +189,6 @@ async function recordVisit(shopId: number) {
     }
   }
 }
-
   
   function handleMarkerClick(shop: Shop) {
     shops.value.forEach((s) => (s.isOpen = false))
@@ -195,6 +196,22 @@ async function recordVisit(shopId: number) {
       shop.isOpen = true
     })
   }
+
+  function handleRowClick(shop: Shop) {
+  // InfoWindowの開閉処理
+  shops.value.forEach((s) => (s.isOpen = false))
+  nextTick().then(() => {
+    shop.isOpen = true
+    center.value = { lat: shop.lat, lng: shop.lng }
+
+    // #map へスクロール
+    const mapElement = document.getElementById('map')
+    if (mapElement) {
+      mapElement.scrollIntoView({ behavior: 'smooth' })
+    }
+  })
+}
+
   
   // ------------------------
   // 🧠 Filter & Sort

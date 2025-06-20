@@ -1,5 +1,5 @@
 <template>
-  <section class="card" style="max-width: 1000px; position: relative;">
+  <section id="map" class="card" style="max-width: 1000px; position: relative;">
     <GMapMap
       :center="center"
       :zoom="11"
