@@ -11,14 +11,20 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+
 app.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDiNJLDZz_STC2tqG-14imShfnkPGgcKp4',
+    key: import.meta.env.VITE_GOOGLE_API_KEY, 
     libraries: 'places',
     v: 'weekly',
     loading: 'async',
   },
 })
+
+// ✅ 開発時のみ確認ログを出す
+if (import.meta.env.DEV) {
+  console.log('✅ VITE_GOOGLE_API_KEY:', import.meta.env.VITE_GOOGLE_API_KEY)
+}
 
 // ✅ CSRFトークンを取得してからマウント
 api.get('/sanctum/csrf-cookie').then(() => {
