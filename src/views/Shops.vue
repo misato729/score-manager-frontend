@@ -171,24 +171,32 @@
   }
 
 
-async function recordVisit(shopId: number) {
+  async function recordVisit(shopId: number) {
   try {
-    
-    await api.post('/api/visit', { shop_id: shopId })
-    alert('✅ 行脚しました！')
+    const res = await api.post('/api/visit', { shop_id: shopId })
+    alert(res.data.message || '✅ 行脚しました！')
 
     if (!visitedShopIds.value.includes(shopId)) {
       visitedShopIds.value.push(shopId)
     }
   } catch (err: any) {
-    if (err.response?.status === 409) {
-      alert('⚠️ すでに行脚済みです')
+    // エラー内容を詳細に出力
+    console.error('❌ /api/visit に失敗しました:', err)
+
+    if (err.response) {
+      console.error('📦 サーバーレスポンス:', err.response.data)
+      console.error('📡 ステータスコード:', err.response.status)
+      alert(`❌ 行脚失敗: ${err.response.data.message || 'サーバーエラー'}`)
+    } else if (err.request) {
+      console.error('🚫 サーバーからレスポンスなし（リクエストエラー）:', err.request)
+      alert('❌ サーバーに接続できませんでした')
     } else {
-      alert('❌ 行脚に失敗しました')
-      console.error(err)
+      console.error('🐞 その他のエラー:', err.message)
+      alert('❌ 不明なエラーが発生しました')
     }
   }
 }
+
   
   function handleMarkerClick(shop: Shop) {
     shops.value.forEach((s) => (s.isOpen = false))

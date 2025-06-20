@@ -19,7 +19,7 @@
         <tr v-for="shop in visitedList" :key="shop.id">
           <td>{{ extractPrefecture(shop.address) }}</td>
           <td>{{ shop.name }}</td>
-          <td>{{ formatDate(shop.visited_at) }}</td>
+          <td>{{ formatDate(shop.created_at) }}</td>
         </tr>
       </tbody>
     </table>
@@ -33,11 +33,19 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api/axios'
 
+// ✅ dayjsを使ってフォーマット対応
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 interface VisitedShop {
   id: number
   name: string
   address: string
-  visited_at: string
+  created_at: string
 }
 
 const visitedList = ref<VisitedShop[]>([])
@@ -46,13 +54,26 @@ const route = useRoute()
 const userId = computed(() => route.query.user as string)
 
 onMounted(async () => {
+  console.log('✅ VisitedShops.vue mounted')
+  console.log('🧪 userId:', userId.value)
   if (!userId.value) return
 
   try {
     const res = await api.get(`/api/visited-shops?user=${userId.value}`)
     visitedList.value = res.data
-  } catch (err) {
-    console.error('❌ 行脚店舗の取得に失敗しました', err)
+  } catch (err: any) {
+    console.error('❌ 行脚店舗の取得に失敗しました')
+
+    if (err.response) {
+      console.error('📦 サーバーレスポンス:', err.response.data)
+      alert(`エラー: ${err.response.data.message || '不明なサーバーエラー'}`)
+    } else if (err.request) {
+      console.error('📡 リクエストエラー（サーバー未応答）:', err.request)
+      alert('サーバーに接続できませんでした')
+    } else {
+      console.error('🐞 その他のエラー:', err.message)
+      alert('予期せぬエラーが発生しました')
+    }
   }
 })
 
@@ -62,14 +83,7 @@ function extractPrefecture(address: string): string {
 }
 
 function formatDate(dateTimeStr: string): string {
-  const date = new Date(dateTimeStr)
-  return date.toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  return dayjs.utc(dateTimeStr).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm')
 }
 
 const uniquePrefectures = computed(() => {
