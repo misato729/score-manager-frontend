@@ -46,6 +46,8 @@ const route = useRoute()
 const userId = computed(() => route.query.user as string)
 
 onMounted(async () => {
+  console.log('✅ VisitedShops.vue mounted')
+  console.log('🧪 userId:', userId.value)
   if (!userId.value) return
 
   try {
