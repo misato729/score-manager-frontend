@@ -1,16 +1,7 @@
 <template>
     <section class="card" style="max-width: 1000px;">
-      <div class="filters">
-        <!-- 検索バー -->
-        <input
-          v-model="modelKeyword"
-          type="text"
-          placeholder="店舗名・地名を検索"
-        />
-  
-        <!-- フィルタチェックボックス -->
-        <label><input type="checkbox" v-model="modelUnder100" /> 100円以下</label>
-        <label><input type="checkbox" v-model="modelTwoOrMore" /> 2台以上</label>
+      <div class="filters">  
+
   
         <!-- 都道府県選択 -->
         <label>
@@ -21,6 +12,15 @@
             </option>
           </select>
         </label>
+        <!-- フィルタチェックボックス -->
+        <label><input type="checkbox" v-model="modelUnder100" /> 100円以下</label>
+        <label><input type="checkbox" v-model="modelTwoOrMore" /> 2台以上</label>
+        <!-- 検索バー -->
+        <input
+          v-model="modelKeyword"
+          type="text"
+          placeholder="店舗名・地名を検索"
+        />
       </div>
     </section>
   </template>
