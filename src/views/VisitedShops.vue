@@ -51,10 +51,22 @@ onMounted(async () => {
   try {
     const res = await api.get(`/api/visited-shops?user=${userId.value}`)
     visitedList.value = res.data
-  } catch (err) {
-    console.error('❌ 行脚店舗の取得に失敗しました', err)
+  } catch (err: any) {
+    console.error('❌ 行脚店舗の取得に失敗しました')
+
+    if (err.response) {
+      console.error('📦 サーバーレスポンス:', err.response.data)
+      alert(`エラー: ${err.response.data.message || '不明なサーバーエラー'}`)
+    } else if (err.request) {
+      console.error('📡 リクエストエラー（サーバー未応答）:', err.request)
+      alert('サーバーに接続できませんでした')
+    } else {
+      console.error('🐞 その他のエラー:', err.message)
+      alert('予期せぬエラーが発生しました')
+    }
   }
 })
+
 
 function extractPrefecture(address: string): string {
   const match = address.match(/^.{2,3}(都|道|府|県)/)
