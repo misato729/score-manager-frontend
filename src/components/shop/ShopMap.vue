@@ -18,7 +18,7 @@
       <GMapMarker
         v-for="shop in shops"
         :key="shop.id"
-        :position="{ lat: shop.lat, lng: shop.lng }"
+        :position="{ lat: Number(shop.lat), lng: Number(shop.lng) }"
         :icon="getMarkerIcon(shop.id)"
         @click="$emit('marker-click', shop)"
       >
