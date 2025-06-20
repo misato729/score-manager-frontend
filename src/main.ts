@@ -22,7 +22,7 @@ app.use(VueGoogleMaps, {
 })
 
 // ✅ 開発時のみ確認ログを出す
-console.log('✅ VITE_GOOGLE_API_KEY:', import.meta.env.VITE_GOOGLE_API_KEY)
+  console.log('✅ VITE_GOOGLE_API_KEY:', import.meta.env.VITE_GOOGLE_API_KEY)
 
 // ✅ CSRFトークンを取得してからマウント
 api.get('/sanctum/csrf-cookie').then(() => {
