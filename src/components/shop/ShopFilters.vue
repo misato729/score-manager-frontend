@@ -1,16 +1,7 @@
 <template>
     <section class="card" style="max-width: 1000px;">
-      <div class="filters">
-        <!-- 検索バー -->
-        <input
-          v-model="modelKeyword"
-          type="text"
-          placeholder="店舗名・地名を検索"
-        />
-  
-        <!-- フィルタチェックボックス -->
-        <label><input type="checkbox" v-model="modelUnder100" /> 100円以下</label>
-        <label><input type="checkbox" v-model="modelTwoOrMore" /> 2台以上</label>
+      <div class="filters">  
+
   
         <!-- 都道府県選択 -->
         <label>
@@ -21,9 +12,15 @@
             </option>
           </select>
         </label>
-  
-        <!-- 現在地検索ボタン -->
-        <button @click="$emit('search-nearby')" class="search-btn">📍 近くの店舗を検索</button>
+        <!-- フィルタチェックボックス -->
+        <label><input type="checkbox" v-model="modelUnder100" /> 100円以下</label>
+        <label><input type="checkbox" v-model="modelTwoOrMore" /> 2台以上</label>
+        <!-- 検索バー -->
+        <input
+          v-model="modelKeyword"
+          type="text"
+          placeholder="店舗名・地名を検索"
+        />
       </div>
     </section>
   </template>
@@ -55,16 +52,6 @@
     border-radius: 4px;
     flex: 1;
     min-width: 200px;
-  }
-  
-  .search-btn {
-    padding: 6px 12px;
-    background-color: #59aaff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
   }
   </style>
   

@@ -1,6 +1,6 @@
 // src/stores/authStore.ts
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   loginApi,
   registerApi,
@@ -26,6 +26,9 @@ export const useAuthStore = defineStore('auth', () => {
       throw err
     }
   }
+
+  const isLoggedIn = computed(() => user.value !== null)
+
 
   const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
     try {
@@ -61,5 +64,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { user, login, register, logout, fetchUser, getCsrfToken, clear }
+  return { user, login, isLoggedIn, register, logout, fetchUser, getCsrfToken, clear }
 })

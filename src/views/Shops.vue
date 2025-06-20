@@ -12,7 +12,6 @@
         v-model:filterTwoOrMore="filterTwoOrMore"
         v-model:selectedPrefecture="selectedPrefecture"
         :prefectures="prefectures"
-        @search-nearby="searchNearby"
       />
   
       <ShopMap
@@ -21,6 +20,7 @@
         :userLocation="userLocation"
         :currentLocationIcon="currentLocationIcon"
         :isNear="isNear"
+        :visitedShopIds="visitedShopIds"
         @marker-click="handleMarkerClick"
         @record-visit="recordVisit"
         @move-center="moveToCurrentLocation"
@@ -32,7 +32,10 @@
         :getDistance="getDistanceFromLatLng"
         :isVisited="isVisited"
         :hasLocation="!!currentPosition"
+        @search-nearby="searchNearby"
+        @row-click="handleRowClick"
       />
+
     </div>
   </template>
   
@@ -41,13 +44,14 @@
   // 🔧 Imports
   // ------------------------
   import { ref, nextTick, computed, onMounted } from 'vue'
+  import api from '@/api/axios'
+  import { useAuthStore } from '@/stores/authStore'
   import ShopFilters from '@/components/shop/ShopFilters.vue'
   import ShopMap from '@/components/shop/ShopMap.vue'
   import ShopTable from '@/components/shop/ShopTable.vue'
   import {
     extractPrefecture,
     getDistance,
-    loadShopsFromCSV,
   } from '@/utils/shop'
     import type { Shop } from '@/types'
   
@@ -60,6 +64,13 @@
   const currentLocationIcon = ref<any>(null)
   const userLocation = ref<{ lat: number; lng: number } | null>(null)
   const visitedShopIds = ref<number[]>([])
+
+  const shopsWithVisitStatus = computed(() =>
+  filteredShops.value.map((shop) => ({
+    shop,
+    isVisited: visitedShopIds.value.includes(shop.id),
+  }))
+)
   
   const prefectures = [ 'すべて', '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県', '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県', '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県', '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県', '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県' ]
   
@@ -68,15 +79,37 @@
   const filterUnder100 = ref(false)
   const filterTwoOrMore = ref(false)
   const sortByDistance = ref(false)
-  
+
+  const authStore = useAuthStore()
+
   // ------------------------
   // 📦 Initial Load
   // ------------------------
   onMounted(async () => {
-    moveToCurrentLocation()
-    shops.value = await loadShopsFromCSV()
-  })
-  
+  moveToCurrentLocation()
+
+  // 店舗一覧だけは常に取得
+  try {
+    const shopRes = await api.get('/api/shops')
+    shops.value = shopRes.data
+  } catch (err) {
+    alert('❌ 店舗情報の取得に失敗しました')
+    console.error(err)
+  }
+
+  // 行脚履歴はログイン中のみ取得
+  if (authStore.user) {
+    try {
+      const visitedRes = await api.get('/api/visited')
+      visitedShopIds.value.splice(0, visitedShopIds.value.length, ...visitedRes.data.map((v: any) => v.shop_id))
+    } catch (err) {
+      console.warn('⚠️ 行脚履歴の取得に失敗しました')
+      console.error(err)
+    }
+  }
+})
+
+
   // ------------------------
   // 🗺️ Map / Marker
   // ------------------------
@@ -136,10 +169,26 @@
   function isVisited(id: number): boolean {
     return visitedShopIds.value.includes(id)
   }
-  
-  function recordVisit(id: number) {
-    if (!visitedShopIds.value.includes(id)) visitedShopIds.value.push(id)
+
+
+async function recordVisit(shopId: number) {
+  try {
+    
+    await api.post('/api/visit', { shop_id: shopId })
+    alert('✅ 行脚しました！')
+
+    if (!visitedShopIds.value.includes(shopId)) {
+      visitedShopIds.value.push(shopId)
+    }
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      alert('⚠️ すでに行脚済みです')
+    } else {
+      alert('❌ 行脚に失敗しました')
+      console.error(err)
+    }
   }
+}
   
   function handleMarkerClick(shop: Shop) {
     shops.value.forEach((s) => (s.isOpen = false))
@@ -147,6 +196,22 @@
       shop.isOpen = true
     })
   }
+
+  function handleRowClick(shop: Shop) {
+  // InfoWindowの開閉処理
+  shops.value.forEach((s) => (s.isOpen = false))
+  nextTick().then(() => {
+    shop.isOpen = true
+    center.value = { lat: shop.lat, lng: shop.lng }
+
+    // #map へスクロール
+    const mapElement = document.getElementById('map')
+    if (mapElement) {
+      mapElement.scrollIntoView({ behavior: 'smooth' })
+    }
+  })
+}
+
   
   // ------------------------
   // 🧠 Filter & Sort
