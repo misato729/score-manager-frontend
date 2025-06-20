@@ -72,8 +72,8 @@ function onRecordVisit(shopId: number) {
 
 function getMarkerIcon(shopId: number): string {
   return props.visitedShopIds.includes(shopId)
-    ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-    : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+    ? 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+    : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
 }
 </script>
 
