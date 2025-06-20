@@ -19,7 +19,7 @@
         <tr v-for="shop in visitedList" :key="shop.id">
           <td>{{ extractPrefecture(shop.address) }}</td>
           <td>{{ shop.name }}</td>
-          <td>{{ formatDate(shop.visited_at) }}</td>
+          <td>{{ formatDate(shop.created_at) }}</td>
         </tr>
       </tbody>
     </table>
@@ -37,7 +37,7 @@ interface VisitedShop {
   id: number
   name: string
   address: string
-  visited_at: string
+  created_at: string
 }
 
 const visitedList = ref<VisitedShop[]>([])
