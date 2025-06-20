@@ -33,6 +33,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api/axios'
 
+// ✅ dayjsを使ってフォーマット対応
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 interface VisitedShop {
   id: number
   name: string
@@ -69,21 +77,13 @@ onMounted(async () => {
   }
 })
 
-
 function extractPrefecture(address: string): string {
   const match = address.match(/^.{2,3}(都|道|府|県)/)
   return match ? match[0] : '不明'
 }
 
 function formatDate(dateTimeStr: string): string {
-  const date = new Date(dateTimeStr)
-  return date.toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  return dayjs.utc(dateTimeStr).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm')
 }
 
 const uniquePrefectures = computed(() => {
