@@ -2,6 +2,7 @@
   <section id="map" class="card" style="max-width: 1000px; position: relative;">
     <GMapMap
       :center="center"
+      :api-key="GOOGLE_MAP_API_KEY"
       :zoom="11"
       style="width: 100%; height: 600px"
       @bounds_changed="$emit('map-ready')"
@@ -41,6 +42,8 @@
 <script setup lang="ts">
 import type { Shop } from '@/types'
 import ShopInfoWindow from './ShopInfoWindow.vue'
+
+const GOOGLE_MAP_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY
 
 const props = defineProps<{
   shops: Shop[]
