@@ -12,17 +12,17 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
+const key = import.meta.env.VITE_GOOGLE_API_KEY
+console.log('✅ 実際のAPIキー:', key)
+
 app.use(VueGoogleMaps, {
   load: {
-    key: import.meta.env.VITE_GOOGLE_API_KEY, 
+    key, // ← ここで一度変数化
     libraries: 'places',
     v: 'weekly',
     loading: 'async',
   },
 })
-
-// ✅ 開発時のみ確認ログを出す
-  console.log('✅ VITE_GOOGLE_API_KEY:', import.meta.env.VITE_GOOGLE_API_KEY)
 
 // ✅ CSRFトークンを取得してからマウント
 api.get('/sanctum/csrf-cookie').then(() => {
