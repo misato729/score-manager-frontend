@@ -21,6 +21,7 @@
 
         <button type="submit" class="btn register-button">新規登録</button>
       </form>
+      <p id="caution">アカウント作成には10秒ほどかかります。ボタンを複数回押さず、そのままお待ちください。</p>
     </section>
 
     <!-- ログインへの案内 -->
@@ -155,5 +156,9 @@ input[type="password"] {
   border-left: 8px solid #a48be0;
   padding-left: 12px;
   margin-bottom: 12px;
+}
+
+#caution {
+  font-size: 0.8rem;
 }
 </style>
