@@ -4,7 +4,9 @@
         <h1>REFLEC BEAT 設置店舗マップ</h1>
       </header>
   
-      <p>「お問い合わせ」ページから情報提供のご協力をお願いいたします。</p>
+      <p>「お問い合わせ」ページから情報提供のご協力をお願いいたします。行脚機能の使い方は
+        <RouterLink to="/how_to_angya" class="link">こちら</RouterLink>
+      </p>
   
       <ShopFilters
         v-model:keyword="keyword"
@@ -281,6 +283,21 @@
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 8px;
+  }
+
+  
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 8px solid #a48be0;
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+
+  .link {
+    color: #1c8cff;
+    font-weight: bold;
+    text-decoration: underline;
   }
   </style>
   
