@@ -5,6 +5,7 @@
       <h1>REFLEC BEAT plus レベル11</h1>
       <h2>難易度表＆クリアランク管理サイト</h2>
       </header>
+      <AdNinja />
       <section class="card intro-card" style="max-width: 800px">
         <h2 class="title">本サイトについて</h2>
         <p class="lead">
@@ -56,34 +57,34 @@
       </p>
     </section>
 
-    <!-- プライバシーポリシー -->
-    <section class="card caution-card" style="max-width: 800px">
-      <h2 class="title pink">プライバシーポリシー</h2>
-      <p>
-        当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、Googleによる第三者配信の広告サービス「Google AdSense（グーグルアドセンス）」を利用しています。
-      </p>
-      <p>
-        Googleを含む第三者広告配信事業者は、ユーザーの興味に応じた広告を表示するために、Cookieなどの技術を使用することがあります。これにより当サイトや他サイトへのアクセス情報に基づいた広告が表示されます。
-      </p>
-      <p>
-        なお、取得される情報には氏名、住所、メールアドレス、電話番号などの個人を特定できる情報は一切含まれません。
-      </p>
-      <p>
-        GoogleによるCookieの取り扱いなど詳細は、以下のページをご確認ください。<br />
-        <a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener">Googleの広告に関するポリシー</a>
-      </p>
-      <p>
-        広告のパーソナライズを無効にしたい場合は、下記リンクより設定変更が可能です。<br />
-        <a href="https://adssettings.google.com/authenticated" target="_blank" rel="noopener">Google広告設定ページ</a><br />
-      </p>
-      <p>
-        当サイトではアクセス解析ツールを使用する場合がありますが、収集される情報は匿名であり、個人を特定するものではありません。
-      </p>
-      <p>
-        ご不明な点がありましたら、以下のメールアドレスまでご連絡ください。<br />
-        <a href="mailto:rbplus.rank.manager@gmail.com" class="link">rbplus.rank.manager@gmail.com</a>
-      </p>
-    </section>
+<!-- プライバシーポリシー -->
+<section class="card caution-card" style="max-width: 800px">
+  <h2 class="title pink">プライバシーポリシー</h2>
+  <p>
+    当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、第三者配信の広告サービス「忍者AdMax（株式会社サムライファクトリー）」を利用しています。
+  </p>
+  <p>
+    広告配信事業者は、ユーザーの興味に応じた広告を表示するために、Cookieなどの技術を使用することがあります。これにより当サイトや他サイトへのアクセス情報に基づいた広告が表示される場合があります。
+  </p>
+  <p>
+    なお、取得される情報には氏名、住所、メールアドレス、電話番号などの個人を特定できる情報は含まれていません。
+  </p>
+  <p>
+    詳しくは、忍者AdMaxのプライバシーポリシーをご参照ください：<br />
+    <a href="https://corp.ninja.co.jp/privacy/" target="_blank" rel="noopener">忍者AdMax プライバシーポリシー</a>
+  </p>
+  <p>
+    広告表示を希望されない場合は、ブラウザのCookie機能を無効にすることで制限が可能です。
+  </p>
+  <p>
+    当サイトではアクセス解析ツールを使用する場合がありますが、収集される情報は匿名であり、個人を特定するものではありません。
+  </p>
+  <p>
+    ご不明な点がありましたら、以下のメールアドレスまでご連絡ください。<br />
+    <a href="mailto:rbplus.rank.manager@gmail.com" class="link">rbplus.rank.manager@gmail.com</a>
+  </p>
+</section>
+
 
 
     <!-- 更新履歴 -->
@@ -103,6 +104,7 @@
   <script setup lang="ts">
   import { RouterLink } from 'vue-router'
   import { useAuthStore } from '@/stores/authStore'
+  import AdNinja from '@/components/common/AdNinja.vue'
 
   const auth = useAuthStore()
 
