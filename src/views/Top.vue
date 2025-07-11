@@ -5,7 +5,9 @@
       <h1>REFLEC BEAT plus レベル11</h1>
       <h2>難易度表＆クリアランク管理サイト</h2>
       </header>
-      <AdNinja />
+      
+            <!-- ✅ 忍者AdMax審査用バナー -->
+      <div ref="adContainer" style="text-align:center; margin:1rem 0;"></div>
       <section class="card intro-card" style="max-width: 800px">
         <h2 class="title">本サイトについて</h2>
         <p class="lead">
@@ -104,9 +106,23 @@
   <script setup lang="ts">
   import { RouterLink } from 'vue-router'
   import { useAuthStore } from '@/stores/authStore'
+  import { onMounted, ref } from 'vue'
   import AdNinja from '@/components/common/AdNinja.vue'
 
   const auth = useAuthStore()
+
+
+// 忍者AdMax広告を挿入する div
+const adContainer = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  if (adContainer.value) {
+    const script = document.createElement('script')
+    script.src = 'https://adm.shinobi.jp/s/72c75eb6b5a26d1116998f18665d0711' // 審査用広告タグ
+    script.async = true
+    adContainer.value.appendChild(script)
+  }
+})
 
   </script>
   
