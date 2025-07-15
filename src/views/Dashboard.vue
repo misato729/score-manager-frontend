@@ -11,6 +11,9 @@
     <div v-if="userNotFound" class="not-found-message">
       このユーザーは存在しないか、アカウントが削除されています。
     </div>
+  
+    <!-- 忍者AdMax広告 -->
+    <AdNinja />
 
     <!-- ✅ Progress セクション -->
     <section class="card" v-if="!isGuestView">

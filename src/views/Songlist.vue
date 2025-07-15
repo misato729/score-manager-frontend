@@ -3,6 +3,9 @@
       <header class="page-title">
         <h1>楽曲一覧</h1>
       </header>
+
+      <!-- 忍者AdMax広告 -->
+      <AdNinja />
   
       <section class="card" style="max-width: 800px">
         <div class="form-area">

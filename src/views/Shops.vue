@@ -3,6 +3,9 @@
       <header class="page-title">
         <h1>REFLEC BEAT 設置店舗マップ</h1>
       </header>
+
+      <!-- 忍者AdMax広告 -->
+      <AdNinja />
   
       <p>「お問い合わせ」ページから情報提供のご協力をお願いいたします。行脚機能の使い方は
         <RouterLink to="/how_to_angya" class="link">こちら</RouterLink>

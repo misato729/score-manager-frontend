@@ -5,6 +5,9 @@
         <h1>お問い合わせ</h1>
         <h2>ご意見・ご連絡はこちらから</h2>
       </header>
+
+      <!-- 忍者AdMax広告 -->
+      <AdNinja />
   
       <!-- メールでの問い合わせ -->
       <section class="card" style="max-width: 800px">
