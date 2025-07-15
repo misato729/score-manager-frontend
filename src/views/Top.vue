@@ -69,7 +69,7 @@
 <section class="card caution-card" style="max-width: 800px">
   <h2 class="title pink">プライバシーポリシー</h2>
   <p>
-    当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、第三者配信の広告サービス「忍者AdMax（株式会社サムライファクトリー）」を利用しています。
+    当サイト（<a href="https://rbplus-rank-manager.site" target="_blank" rel="noopener">rbplus-rank-manager.site</a>）では、第三者配信の広告サービス「忍者AdMax」を利用しています。
   </p>
   <p>
     広告配信事業者は、ユーザーの興味に応じた広告を表示するために、Cookieなどの技術を使用することがあります。これにより当サイトや他サイトへのアクセス情報に基づいた広告が表示される場合があります。
@@ -103,6 +103,7 @@
         <li>ver.2025.06.13 : 目標ランクが保存され、次回以降その値が自動で選ばれる仕様に修正しました。</li>
         <li>ver.2025.06.15 : 「楽曲一覧」「設置店舗」「お問い合わせ」ページを新設しました。</li>
         <li>ver.2025.06.20 : 「行脚（店舗チェックイン）」機能を追加しました。</li>
+        <li>ver.2025.07.15 : 広告を追加しました。</li>
       </ul>
     </section>
 
