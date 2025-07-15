@@ -5,7 +5,7 @@
       </header>
 
       <AdNinja
-        admaxId="admax-banner-71116c76-8d59-40a8-ad37-7667c8f380f3"
+        admaxId="admax-banner-xxx"
         tagId="ecec6014609d3896762b4640c5020d62"
         :width="728"
         :height="90"

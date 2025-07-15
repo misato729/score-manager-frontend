@@ -14,7 +14,7 @@
   
       <!-- 忍者AdMax広告 -->
       <AdNinja
-        admaxId="admax-banner-71116c76-8d59-40a8-ad37-7667c8f380f3"
+        admaxId="admax-banner-xxx"
         tagId="e5d56508d18963b760f668e9750b78df"
         :width="728"
         :height="90"

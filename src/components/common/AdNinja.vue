@@ -1,7 +1,7 @@
 <template>
   <div class="ninja-ad">
     <iframe
-      :srcdoc="generateIframeContent(admaxId, tagId)"
+      :srcdoc="generateIframeContent(admaxId, tagId, width, height)"
       :width="width"
       :height="height"
       frameborder="0"
@@ -12,14 +12,14 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   admaxId: string
   tagId: string
   width: number
   height: number
 }>()
 
-function generateIframeContent(admaxId: string, tagId: string) {
+function generateIframeContent(admaxId: string, tagId: string, width: number, height: number) {
   return `
     <div id="${admaxId}" style="display:inline-block;width:100%;height:100%;"></div>
     <script>
@@ -30,7 +30,7 @@ function generateIframeContent(admaxId: string, tagId: string) {
         width: ${width},
         height: ${height}
       };
-      document.write('<scr' + 'ipt src="https://adm.shinobi.jp/st/s.js"><\/scr' + 'ipt>');
+      document.write('<scr' + 'ipt src="https://adm.shinobi.jp/st/s.js"><\\/scr' + 'ipt>');
     <\/script>
   `
 }
