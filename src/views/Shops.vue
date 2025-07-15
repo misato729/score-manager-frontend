@@ -4,8 +4,13 @@
         <h1>REFLEC BEAT 設置店舗マップ</h1>
       </header>
 
-      <!-- 忍者AdMax広告 -->
-      <AdNinja />
+      <AdNinja
+        admaxId="admax-banner-71116c76-8d59-40a8-ad37-7667c8f380f3"
+        tagId="ecec6014609d3896762b4640c5020d62"
+        :width="728"
+        :height="90"
+      />
+
   
       <p>「お問い合わせ」ページから情報提供のご協力をお願いいたします。行脚機能の使い方は
         <RouterLink to="/how_to_angya" class="link">こちら</RouterLink>

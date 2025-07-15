@@ -6,9 +6,6 @@
         <h2>ご意見・ご連絡はこちらから</h2>
       </header>
 
-      <!-- 忍者AdMax広告 -->
-      <AdNinja />
-  
       <!-- メールでの問い合わせ -->
       <section class="card" style="max-width: 800px">
         <h2 class="title">個別のお問い合わせ</h2>

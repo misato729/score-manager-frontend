@@ -12,8 +12,13 @@
       このユーザーは存在しないか、アカウントが削除されています。
     </div>
   
-    <!-- 忍者AdMax広告 -->
-    <AdNinja />
+      <!-- 忍者AdMax広告 -->
+      <AdNinja
+        admaxId="admax-banner-71116c76-8d59-40a8-ad37-7667c8f380f3"
+        tagId="e5d56508d18963b760f668e9750b78df"
+        :width="728"
+        :height="90"
+      />
 
     <!-- ✅ Progress セクション -->
     <section class="card" v-if="!isGuestView">
@@ -54,6 +59,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { updateTarget } from '@/api/userApi'
 import api from '@/api/axios'
+import AdNinja from '@/components/common/AdNinja.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

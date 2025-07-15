@@ -7,7 +7,12 @@
       </header>
       
       <!-- 忍者AdMax広告 -->
-      <AdNinja />
+      <AdNinja
+        admaxId="admax-banner-71116c76-8d59-40a8-ad37-7667c8f380f3"
+        tagId="72c75eb6b5a26d1116998f18665d0711"
+        :width="728"
+        :height="90"
+      />
 
       <section class="card intro-card" style="max-width: 800px">
         <h2 class="title">本サイトについて</h2>
