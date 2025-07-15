@@ -16,7 +16,7 @@
   onMounted(() => {
     if (adContainer.value) {
       const script = document.createElement('script')
-      script.async = true
+      // script.async = true
   
       // デバイスに応じてスクリプトURLを切り替える
       script.src = isMobileDevice()
