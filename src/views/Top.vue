@@ -7,7 +7,9 @@
       </header>
       
             <!-- ✅ 忍者AdMax審査用バナー -->
-      <div ref="adContainer" style="text-align:center; margin:1rem 0;"></div>
+      <div ref="adContainer" style="text-align:center; margin:1rem 0;">
+        <AdNinja />
+      </div>
       <section class="card intro-card" style="max-width: 800px">
         <h2 class="title">本サイトについて</h2>
         <p class="lead">
