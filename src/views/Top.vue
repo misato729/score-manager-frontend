@@ -6,10 +6,9 @@
       <h2>難易度表＆クリアランク管理サイト</h2>
       </header>
       
-            <!-- ✅ 忍者AdMax審査用バナー -->
-      <div ref="adContainer" style="text-align:center; margin:1rem 0;">
-        <AdNinja />
-      </div>
+      <!-- ✅ 忍者AdMax審査用バナー -->
+      <AdNinja />
+      
       <section class="card intro-card" style="max-width: 800px">
         <h2 class="title">本サイトについて</h2>
         <p class="lead">
