@@ -59,6 +59,7 @@
   import ShopFilters from '@/components/shop/ShopFilters.vue'
   import ShopMap from '@/components/shop/ShopMap.vue'
   import ShopTable from '@/components/shop/ShopTable.vue'
+  import AdNinja from '@/components/common/AdNinja.vue'
   import {
     extractPrefecture,
     getDistance,
