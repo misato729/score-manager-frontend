@@ -36,34 +36,23 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import Cookies from 'js-cookie'
 
 const router = useRouter()
 const auth = useAuthStore()
 
-const form = reactive({
-  email: '',
-  password: '',
-  remember: true,
-})
+const form = reactive({ email: '', password: '', remember: true })
 
 const onLogin = async () => {
   try {
-    // ✅ csrf-cookieを叩いてからCookie確認
-    await auth.getCsrfToken()
-
-    console.log('📦 Cookie:', document.cookie)
-    console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
-
-    const user = await auth.login(form) // ← user を返すようにする
-    router.push(`/dashboard?user=${user.id}`) // ← 安全に id を取得
-  } catch (e) {
+    await auth.getCsrfToken()               // 1) CSRF
+    const user = await auth.login(form)     // 2) /login → /api/user
+    router.push(`/dashboard?user=${user.id}`)
+  } catch (e: any) {
+    console.error('login failed', e?.response?.status, e?.response?.data)
     alert('ログインに失敗しました')
   }
 }
-
 </script>
-
 
 <style>
 .login-wrapper {
