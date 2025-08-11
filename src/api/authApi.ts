@@ -17,10 +17,10 @@ export type User = {
 }
 
 /** ログイン → /api/user でユーザー取得（Cookie方式） */
-export const loginApi = async (form: { email: string; password: string; remember?: boolean }) => {
+export const loginApi = async (form: { email: string; password: string }) => {
   await getCsrfToken()
-  await api.post('/login', form)                  // ← Web側 /login
-  const res = await api.get<User>('/api/user')    // ← ここは /api/user が正解
+  await api.post('/api/login', form)    // ★ API専用ルートに変更
+  const res = await api.get('/api/user') // ★ /api/user にも揃える
   return res.data
 }
 
