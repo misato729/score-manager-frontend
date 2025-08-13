@@ -9,29 +9,38 @@
         {{ showDetail ? '詳細非表示' : '詳細表示' }}
       </button>
     </div>
+    <!-- 全体 Progress -->
+<ProgressBar
+  tier="全体"
+  :achieved="totalAchieved"
+  :total="totalSongs"
+  :rank="selectedRankForColor"
+  :showDetail="showDetail"
+/>
 
-    <!-- 全体 ProgressBar -->
+<!-- FC（1回だけ上部に表示）: fullComboの合計を達成数として渡す -->
+<ProgressBar
+  tier="FC"
+  :achieved="totalFullCombo"
+  :total="totalSongs"
+/>
+
+<hr />
+
+<!-- Collapse：Tier別 Progress -->
+<Transition name="collapse">
+  <div v-if="showDetail" class="tier-progress-list">
     <ProgressBar
-      tier="全体"
-      :achieved="totalAchieved"
-      :total="totalSongs"
+      v-for="tier in jirikiProgress"
+      :key="tier.name"
+      :tier="tier.name"
+      :achieved="tier.achieved"
+      :total="tier.total"
       :rank="selectedRankForColor"
-      :showDetail="showDetail"
     />
+  </div>
+</Transition>
 
-    <!-- Collapse：Tier別 Progress -->
-    <Transition name="collapse">
-      <div v-if="showDetail" class="tier-progress-list">
-        <ProgressBar
-          v-for="tier in jirikiProgress"
-          :key="tier.name"
-          :tier="tier.name"
-          :achieved="tier.achieved"
-          :total="tier.total"
-          :rank="selectedRankForColor"
-        />
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -47,9 +56,15 @@ import { rankDisplay, isRankGreaterOrEqual } from '@/utils/rank'
 import type { Score } from '@/types'
 
 // ✅ props: ユーザーの全スコア（126曲分）
-const props = defineProps<{
-  allSongs: Score[]
-}>()
+interface Props {
+  achieved: number
+  fullCombo: number
+  total: number
+  selectRank: string
+  allSongs: Array<any>
+}
+
+const props = defineProps<Props>()
 
 const showDetail = ref(false)
 const uiStore = useUiStore()
@@ -59,6 +74,8 @@ const route = useRoute()
 const mode = computed(() => uiStore.mode)
 const selectedRank = computed(() => uiStore.selectedRank)
 const selectedRankForColor = computed(() => selectedRank.value)
+
+const totalFullCombo = computed(() => props.fullCombo)
 
 // ✅ AAA+ は Expert では見た目 95% に変換して比較対象にする
 const selectedRankRaw = computed(() => {

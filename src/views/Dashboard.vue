@@ -25,6 +25,7 @@
       <h2 class="section-title">Progress</h2>
       <ProgressSection
         :achieved="totalAchieved"
+        :fullCombo="totalFullCombo"
         :total="scoreStore.scores.length"
         :selectRank="uiStore.selectedRank"
         :allSongs="scoreStore.scores"
@@ -100,6 +101,10 @@ const totalAchieved = computed(() =>
   scoreStore.scores.filter(score => score.rank !== '').length
 )
 
+// ✅ フルコンボ曲数
+const totalFullCombo = computed(() =>
+  scoreStore.scores.filter(score => score.fc).length
+)
 
 // ✅ アカウント削除
 const router = useRouter()
