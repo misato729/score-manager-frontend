@@ -6,12 +6,18 @@
     <div v-else-if="isFC" class="fc-label">FULL COMBO!!</div>
 
     <div class="card-surface" :style="{ backgroundColor: rankColor }">
-      <!-- ✅ タイトル -->
+      <!-- ✅ タイトル（クリックでメモモーダル） -->
       <div
         class="title"
         ref="titleRef"
-        :class="{ small: isTooLongTitle }"
+        :class="{ small: isTooLongTitle, 'clickable': true }"
         :style="{ marginTop: isTooLongTitle ? '14px' : isLongTitle ? '20px' : '28px' }"
+        role="button"
+        tabindex="0"
+        @click="openMemo"
+        @keydown.enter.prevent="openMemo"
+        @keydown.space.prevent="openMemo"
+        title="メモを編集"
       >
         {{ props.score.song.title }}
       </div>
@@ -38,6 +44,43 @@
       </div>
     </div>
   </div>
+
+  <!-- ✅ メモ編集モーダル（Teleportでbody直下に描画） -->
+  <Teleport to="body">
+    <div
+      v-if="isMemoOpen"
+      class="modal-overlay"
+      @click.self="closeMemo"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="memo-modal-title"
+    >
+      <div class="modal">
+        <h3 id="memo-modal-title" class="modal-title">
+          {{ props.score.song.title }} のメモ
+        </h3>
+
+        <textarea
+          v-model="localMemo"
+          class="memo-textarea"
+          :readonly="!props.editable"
+          :placeholder="props.editable ? 'メモを入力してください' : 'メモはありません'"
+        />
+
+        <div class="modal-actions">
+          <button class="btn" @click="closeMemo">閉じる</button>
+          <button
+            v-if="props.editable"
+            class="btn primary"
+            :disabled="isSaving"
+            @click="saveMemo"
+          >
+            {{ isSaving ? '保存中…' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -84,11 +127,71 @@ const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : nor
 
 const onSave = async () => {
   await scoreStore.saveScore(props.score.id, {
-    rank: localRank.value,
-    fc: localFc.value ? 1 : 0
-  })
+  memo: localMemo.value,
+  rank: localRank.value,
+  fc: localFc.value ? 1 : 0
+})
 }
 
+/* -------------------------
+ * メモ編集モーダル
+ * ------------------------- */
+type ScoreWithMemo = Score & { memo?: string | null }
+const scoreWithMemo = computed<ScoreWithMemo>(() => props.score as ScoreWithMemo)
+
+const isMemoOpen = ref(false)
+const isSaving = ref(false)
+const localMemo = ref<string>(scoreWithMemo.value.memo ?? '')
+
+watch(() => scoreWithMemo.value.memo, (v) => {
+  localMemo.value = v ?? ''
+})
+
+const openMemo = () => {
+  localMemo.value = props.score.memo ?? ''  // ★ 開く直前に最新を反映
+  isMemoOpen.value = true
+}
+
+const closeMemo = () => {
+  isMemoOpen.value = false
+}
+
+const onEsc = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') closeMemo()
+}
+
+watch(isMemoOpen, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onEsc)
+  } else {
+    document.removeEventListener('keydown', onEsc)
+  }
+})
+
+const saveMemo = async () => {
+  if (!props.editable) { closeMemo(); return }
+  try {
+    isSaving.value = true
+    const updated = await scoreStore.saveScore(props.score.id, {
+      memo: localMemo.value,
+      rank: localRank.value,
+      fc: localFc.value ? 1 : 0
+    })
+    // サーバが最新を返すならそれで上書き（返さない場合でも store が更新されていればOK）
+    if (updated?.memo !== undefined) {
+      localMemo.value = updated.memo ?? ''
+    }
+    closeMemo()
+  } finally {
+    isSaving.value = false
+  }
+}
+
+
+
+/* -------------------------
+ * タイトルの行数測定（既存）
+ * ------------------------- */
 const titleRef = ref<HTMLElement | null>(null)
 const isLongTitle = ref(false)
 const isTooLongTitle = ref(false)
@@ -152,9 +255,12 @@ watch(() => props.score.song.title, async () => {
   word-break: break-word;
   transition: margin 0.2s ease, font-size 0.2s ease;
 }
-
 .title.small {
   font-size: 16px;
+}
+.title.clickable {
+  cursor: pointer;
+  text-underline-offset: 3px;
 }
 
 .bottom {
@@ -186,27 +292,12 @@ watch(() => props.score.song.title, async () => {
 }
 
 @keyframes glow-in {
-  from {
-    opacity: 0;
-    transform: scale(1.05);
-    filter: blur(20px);
-  }
-  to {
-    opacity: 0.8;
-    transform: scale(1.1);
-    filter: blur(6px);
-  }
+  from { opacity: 0; transform: scale(1.05); filter: blur(20px); }
+  to   { opacity: 0.8; transform: scale(1.1); filter: blur(6px); }
 }
 
-.backglow.fc {
-  background: #ffb6c1;
-  box-shadow: 0 0 20px #ffb6c1;
-}
-
-.backglow.excellent {
-  background: #E6B422;
-  box-shadow: 0 0 20px #E6B422;
-}
+.backglow.fc { background: #ffb6c1; box-shadow: 0 0 20px #ffb6c1; }
+.backglow.excellent { background: #E6B422; box-shadow: 0 0 20px #E6B422; }
 
 .fc-label,
 .excellent-label {
@@ -221,19 +312,66 @@ watch(() => props.score.song.title, async () => {
   pointer-events: none;
   white-space: nowrap;
 }
-
-.fc-label {
-  color: #ff69b4;
-}
-
-.excellent-label {
-  color: #E6B422;
-}
+.fc-label { color: #ff69b4; }
+.excellent-label { color: #E6B422; }
 
 @media (max-width: 400px) {
-  .fc-label,
-  .excellent-label {
-    font-size: 10px;
-  }
+  .fc-label, .excellent-label { font-size: 10px; }
+}
+
+/* ===== モーダル ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+}
+.modal {
+  width: min(560px, 92vw);
+  background: #fff;
+  color: #222;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.modal-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: bold;
+}
+.memo-textarea {
+  width: 100%;
+  height: 160px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.modal-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn.primary {
+  background: #6b8cff;
+  color: #fff;
+  border-color: #6b8cff;
+}
+.btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
 </style>
