@@ -6,9 +6,20 @@ import {
   registerApi,
   logoutApi,
   fetchUserApi,
-  getCsrfToken, // 必要なら残す
+  getCsrfToken,
 } from '@/api/authApi'
-import type { User } from '@/api/authApi' // ← typesのUserと重複するなら統一
+import type { User } from '@/api/authApi'
+
+// 非中断のシンプルなタイムアウト（15秒）
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race<T>([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms)
+    ),
+  ])
+}
+const DEFAULT_TIMEOUT = 15000
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -16,20 +27,32 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (form: { email: string; password: string; remember?: boolean }) => {
     try {
-      const userData = await loginApi(form)
+      const userData = await withTimeout(loginApi(form), DEFAULT_TIMEOUT)
+      // 念のため payload 確認（環境によっては空レス→直後に取得）
+      if (!userData?.id) {
+        const me = await withTimeout(fetchUserApi(), DEFAULT_TIMEOUT)
+        if (!me?.id) throw new Error('no_user_payload')
+        user.value = me
+        return me
+      }
       user.value = userData
       return userData
-    } catch (err) {
-      console.error('❌ ログイン失敗:', err)
+    } catch (err: any) {
+      console.error('❌ ログイン失敗:', err?.name || err?.message || err)
       user.value = null
       throw err
     }
   }
 
-  const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
+  const register = async (form: {
+    name: string
+    email: string
+    password: string
+    password_confirmation: string
+  }) => {
     try {
-      const userData = await registerApi(form) // ここは構成次第で null の可能性あり
-      user.value = userData ?? null
+      const userData = await withTimeout(registerApi(form), DEFAULT_TIMEOUT)
+      user.value = userData
     } catch (err) {
       console.error('登録失敗:', err)
       user.value = null
@@ -39,7 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      await logoutApi()
+      await withTimeout(logoutApi(), DEFAULT_TIMEOUT)
       user.value = null
     } catch (err) {
       console.error('ログアウト失敗:', err)
@@ -49,7 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const fetchUser = async () => {
     try {
-      const me = await fetchUserApi() // 未ログインなら 401
+      const me = await withTimeout(fetchUserApi(), DEFAULT_TIMEOUT)
       user.value = me
     } catch (e: any) {
       if (e?.response?.status === 401) {
@@ -65,9 +88,9 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  // 初期化用（アプリ起動時などに呼ぶ）
+  // アプリ起動時の復元用（任意）
   const init = async () => {
-    await fetchUser() // 既存セッションがあれば user を復元
+    await fetchUser()
   }
 
   return { user, isLoggedIn, login, register, logout, fetchUser, getCsrfToken, clear, init }

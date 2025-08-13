@@ -1,8 +1,9 @@
 // src/api/authApi.ts
 import api from '@/api/axios'
 
-/** CSRFを一度だけ取る（多重発火防止は簡易運用。必要なら専用ensure関数に） */
-export const getCsrfToken = async () => {
+const USER_ME_ENDPOINT = '/api/user' // ← /api に統一
+
+export const getCsrfToken = async (): Promise<void> => {
   await api.get('/sanctum/csrf-cookie')
   if (import.meta.env.DEV) {
     // 確認用ログ（本番では消してOK）
@@ -17,34 +18,35 @@ export type User = {
 }
 
 /** ログイン → /api/user でユーザー取得（Cookie方式） */
-export const loginApi = async (form: { email: string; password: string }) => {
+export const loginApi = async (
+  form: { email: string; password: string }
+): Promise<User> => {
   await getCsrfToken()
-  await api.post('/api/login', form)    // ★ API専用ルートに変更
-  const res = await api.get('/api/user') // ★ /api/user にも揃える
+  await api.post('/api/login', form)               // /api/login に統一
+  const res = await api.get<User>(USER_ME_ENDPOINT) // /api/user に統一
   return res.data
 }
 
-/** 登録 → そのままログインしてユーザー返す（必要に応じて仕様調整） */
+/** 登録 → そのままログインしてユーザー返す */
 export const registerApi = async (form: {
   name: string
   email: string
   password: string
   password_confirmation: string
-}) => {
+}): Promise<User> => {
   await getCsrfToken()
-  await api.post('/api/register-user', form)      // あなたの既存API
-  // すぐにログインさせる運用なら続けてログイン
+  await api.post('/api/register-user', form)       // 既存のAPIを継続使用
   return await loginApi({ email: form.email, password: form.password })
 }
 
 /** ログアウト（API側の /api/logout を叩く） */
-export const logoutApi = async () => {
+export const logoutApi = async (): Promise<void> => {
   await getCsrfToken()
-  await api.post('/api/logout')                   // ← /logout ではなく /api/logout
+  await api.post('/api/logout')                    // /api/logout に統一
 }
 
 /** 既存セッション確認用 */
-export const fetchUserApi = async () => {
-  const res = await api.get<User>('/api/user')    // ← /api/user
+export const fetchUserApi = async (): Promise<User> => {
+  const res = await api.get<User>(USER_ME_ENDPOINT) // /api/user に統一
   return res.data
 }

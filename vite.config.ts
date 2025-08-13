@@ -13,4 +13,20 @@ export default defineConfig({
   optimizeDeps: {
     include: ['fast-deep-equal'],
   },
+  server: {
+    proxy: {
+      // /api → Laravel 側に中継
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Sanctum のCSRF取得も中継
+      '/sanctum': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

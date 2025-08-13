@@ -8,19 +8,24 @@
       <p class="desc">メールアドレスとパスワードを入力してください</p>
       <form @submit.prevent="onLogin" class="form">
         <label for="email">メールアドレス</label>
-        <input v-model="form.email" id="email" type="email" required />
+        <input v-model="form.email" id="email" type="email" required :disabled="isSubmitting" />
 
         <label for="password">パスワード</label>
-        <input v-model="form.password" id="password" type="password" required />
+        <input v-model="form.password" id="password" type="password" required :disabled="isSubmitting" />
 
         <label>
-          <input type="checkbox" v-model="form.remember" />
+          <input type="checkbox" v-model="form.remember" :disabled="isSubmitting" />
           ログイン状態を保持する
         </label>
 
-        <button type="submit" class="btn login-button">ログイン</button>
+        <!-- 送信中は非活性＋文言切替 -->
+        <button type="submit" class="btn login-button" :disabled="isSubmitting">
+          {{ isSubmitting ? 'ログイン中...' : 'ログイン' }}
+        </button>
       </form>
-      <p id="caution">メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。</p>
+      <p id="caution">
+        メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。
+      </p>
     </section>
 
     <!-- 新規登録への案内 -->
@@ -33,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -41,15 +46,24 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const form = reactive({ email: '', password: '', remember: true })
+const isSubmitting = ref(false)
 
 const onLogin = async () => {
+  if (isSubmitting.value) return // 二重クリック防止
+  isSubmitting.value = true
   try {
-    await auth.getCsrfToken()               // 1) CSRF
-    const user = await auth.login(form)     // 2) /login → /api/user
+    // authStore 側で CSRF取得＆15秒タイムアウトを面倒見ます
+    const user = await auth.login({ email: form.email, password: form.password, remember: form.remember })
     router.push(`/dashboard?user=${user.id}`)
   } catch (e: any) {
-    console.error('login failed', e?.response?.status, e?.response?.data)
-    alert('ログインに失敗しました')
+    if (e?.message === 'timeout') {
+      alert('ログイン処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')
+    } else {
+      console.error('login failed', e?.response?.status, e?.response?.data)
+      alert('ログインに失敗しました')
+    }
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -102,7 +116,6 @@ input[type="password"] {
   font-size: 1rem;
 }
 
-
 .btn {
   display: inline-block;
   padding: 16px 24px;
@@ -118,10 +131,21 @@ input[type="password"] {
   background: #59aaff;
   color: white;
   border: none;
+  white-space: nowrap; /* 改行防止 */
+  min-width: 168px;
 }
 
 .login-button:hover {
   background: #1c8cff;
+}
+
+/* 非活性時の色変更 */
+.login-button:disabled {
+  background: #9ccfff; /* 薄い青 */
+  cursor: not-allowed;
+}
+.login-button:disabled:hover {
+  background: #9ccfff; /* ホバー色固定 */
 }
 
 .register-button {
