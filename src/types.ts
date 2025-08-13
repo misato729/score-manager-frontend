@@ -24,6 +24,7 @@ export interface Score {
   song_id: number
   rank: string | null
   fc: boolean
+  memo?: string | null
   created_at: string
   updated_at: string
   song: Song
