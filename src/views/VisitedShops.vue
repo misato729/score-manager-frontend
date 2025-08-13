@@ -2,29 +2,39 @@
   <div class="visited-shops">
     <h1>行脚店舗一覧</h1>
 
-    <div class="progress-summary" v-if="visitedList.length > 0">
-      都道府県数：{{ uniquePrefectures.length }} / 47　
-      店舗数：{{ visitedList.length }} 店舗
-    </div>
+    <!-- ロード中表示 -->
+    <p v-if="isLoading">Now Loading...</p>
 
-    <table class="visited-table" v-if="visitedList.length > 0">
-      <thead>
-        <tr>
-          <th>都道府県</th>
-          <th>店舗名</th>
-          <th>訪問日時</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="shop in visitedList" :key="shop.id">
-          <td>{{ extractPrefecture(shop.address) }}</td>
-          <td>{{ shop.name }}</td>
-          <td>{{ formatDate(shop.created_at) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- 取得後の表示 -->
+    <template v-else>
+      <div class="progress-summary" v-if="visitedList.length > 0">
+        都道府県数：{{ uniquePrefectures.length }} / 47　
+        店舗数：{{ visitedList.length }} 店舗
+      </div>
 
-    <p v-else>訪問記録がありません。</p>
+      <table class="visited-table" v-if="visitedList.length > 0">
+        <thead>
+          <tr>
+            <th>都道府県</th>
+            <th>店舗名</th>
+            <th>訪問日時</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="shop in visitedList" :key="shop.id">
+            <td>{{ extractPrefecture(shop.address) }}</td>
+            <td>{{ shop.name }}</td>
+            <td>{{ formatDate(shop.created_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 取得完了 & データ0件 -->
+      <p v-else>訪問記録がありません。</p>
+
+      <!-- エラー時 -->
+      <p v-if="errorMessage" style="color:#c00; margin-top:8px;">{{ errorMessage }}</p>
+    </template>
   </div>
 </template>
 
@@ -32,12 +42,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api/axios'
-
-// ✅ dayjsを使ってフォーマット対応
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -49,31 +56,29 @@ interface VisitedShop {
 }
 
 const visitedList = ref<VisitedShop[]>([])
+const isLoading = ref(true)           // ✅ 追加：ロード状態
+const errorMessage = ref<string>('')  // ✅ 追加：エラーメッセージ（任意）
 
 const route = useRoute()
 const userId = computed(() => route.query.user as string)
 
 onMounted(async () => {
-  console.log('✅ VisitedShops.vue mounted')
-  console.log('🧪 userId:', userId.value)
-  if (!userId.value) return
-
   try {
+    if (!userId.value) {
+      // ユーザーIDが無い場合もロード完了にする（"記録なし" を出したくないなら別メッセージにしてもOK）
+      errorMessage.value = 'ユーザーIDが指定されていません。'
+      return
+    }
     const res = await api.get(`/api/visited-shops?user=${userId.value}`)
     visitedList.value = res.data
   } catch (err: any) {
-    console.error('❌ 行脚店舗の取得に失敗しました')
-
-    if (err.response) {
-      console.error('📦 サーバーレスポンス:', err.response.data)
-      alert(`エラー: ${err.response.data.message || '不明なサーバーエラー'}`)
-    } else if (err.request) {
-      console.error('📡 リクエストエラー（サーバー未応答）:', err.request)
-      alert('サーバーに接続できませんでした')
-    } else {
-      console.error('🐞 その他のエラー:', err.message)
-      alert('予期せぬエラーが発生しました')
-    }
+    console.error('❌ 行脚店舗の取得に失敗しました', err)
+    errorMessage.value =
+      err?.response?.data?.message ??
+      (err?.message || '不明なエラーが発生しました')
+    alert(`エラー: ${errorMessage.value}`)
+  } finally {
+    isLoading.value = false // ✅ 取得の成否に関わらずロード終了
   }
 })
 
@@ -98,34 +103,29 @@ const uniquePrefectures = computed(() => {
   max-width: 800px;
   margin: 0 auto;
 }
-
 h1 {
   font-size: 24px;
   margin-bottom: 16px;
   text-align: center;
 }
-
 .progress-summary {
   font-weight: bold;
   margin-bottom: 16px;
   text-align: center;
   color: #333;
 }
-
 .visited-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
-
 .visited-table th,
 .visited-table td {
   border: 1px solid #ccc;
   padding: 12px;
   text-align: left;
 }
-
 .visited-table th {
   background-color: #f0f0f0;
 }
