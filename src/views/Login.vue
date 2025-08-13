@@ -23,7 +23,9 @@
           {{ isSubmitting ? 'ログイン中...' : 'ログイン' }}
         </button>
       </form>
-      <p id="caution">メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。</p>
+      <p id="caution">
+        メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。
+      </p>
     </section>
 
     <!-- 新規登録への案内 -->
@@ -39,51 +41,25 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import Cookies from 'js-cookie'
 
 const router = useRouter()
 const auth = useAuthStore()
 
-const form = reactive({
-  email: '',
-  password: '',
-  remember: true,
-})
-
+const form = reactive({ email: '', password: '', remember: true })
 const isSubmitting = ref(false)
-
-// タイムアウトヘルパー
-const withTimeout = <T,>(p: Promise<T>, ms: number) => {
-  return Promise.race<T>([
-    p,
-    new Promise<T>((_, reject) => {
-      const id = setTimeout(() => {
-        clearTimeout(id)
-        reject(new Error('timeout'))
-      }, ms)
-    }),
-  ])
-}
-
-const LOGIN_TIMEOUT_MS = 15000 // 15秒
 
 const onLogin = async () => {
   if (isSubmitting.value) return // 二重クリック防止
   isSubmitting.value = true
   try {
-    // CSRFトークン取得（タイムアウト付き）
-    await withTimeout(auth.getCsrfToken(), LOGIN_TIMEOUT_MS)
-
-    console.log('📦 Cookie:', document.cookie)
-    console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
-
-    // ログイン実行（タイムアウト付き）
-    const user = await withTimeout(auth.login(form), LOGIN_TIMEOUT_MS)
+    // authStore 側で CSRF取得＆15秒タイムアウトを面倒見ます
+    const user = await auth.login({ email: form.email, password: form.password, remember: form.remember })
     router.push(`/dashboard?user=${user.id}`)
   } catch (e: any) {
     if (e?.message === 'timeout') {
       alert('ログイン処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')
     } else {
+      console.error('login failed', e?.response?.status, e?.response?.data)
       alert('ログインに失敗しました')
     }
   } finally {
@@ -155,7 +131,7 @@ input[type="password"] {
   background: #59aaff;
   color: white;
   border: none;
-  white-space: nowrap;
+  white-space: nowrap; /* 改行防止 */
   min-width: 168px;
 }
 

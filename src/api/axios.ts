@@ -1,37 +1,25 @@
 // src/api/axios.ts
-import axios from 'axios'
-import Cookies from 'js-cookie'
+import axios from "axios";
 
 const api = axios.create({
-  baseURL:'https://api.rbplus-rank-manager.site', // import.meta.env.VITE_API_URL,127.0.0.1:8000 だと動かない
-  // 開発用：http://localhost:8000
-  // 本番用：https://api.rbplus-rank-manager.site
+  baseURL: import.meta.env.PROD
+    ? "https://api.rbplus-rank-manager.site"
+    : "http://localhost:8000",
   withCredentials: true,
   headers: {
-    'X-Requested-With': 'XMLHttpRequest',
-    'Accept': 'application/json',
+    "X-Requested-With": "XMLHttpRequest",
+    Accept: "application/json",
   },
-})
+});
 
-// ✅ インターセプターで XSRF-TOKEN を常に送信（開発環境のみログ出力）
+// ★ ここで必ず X-XSRF-TOKEN を付与
 api.interceptors.request.use((config) => {
-  // fallback: document.cookie から取得
-  const cookieMatch = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
-  const token = cookieMatch ? decodeURIComponent(cookieMatch[1]) : null
-
-  if (token && config.headers) {
-    config.headers['X-XSRF-TOKEN'] = token
-    if (import.meta.env.DEV) {
-      console.log('✅ X-XSRF-TOKEN sent:', token)
-    }
-  } else {
-    if (import.meta.env.DEV) {
-      console.warn('⚠️ XSRF-TOKEN not found or unreadable')
-    }
+  const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  if (m && config.headers) {
+    // Laravel側はURLデコード済み値を期待する
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(m[1]);
   }
+  return config;
+});
 
-  return config
-})
-
-
-export default api
+export default api;
