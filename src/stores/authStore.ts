@@ -8,37 +8,29 @@ import {
   fetchUserApi,
   getCsrfToken,
 } from '@/api/authApi'
-import type { User } from '@/types'
+import type { User } from '@/api/authApi'
 
-// 中断できるタイムアウトヘルパー（AbortController使用）
-async function withAbortableTimeout<T>(
-  runner: (signal: AbortSignal) => Promise<T>,
-  ms: number
-): Promise<T> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), ms)
-  try {
-    return await runner(controller.signal)
-  } finally {
-    clearTimeout(timer)
-  }
+// 非中断のシンプルなタイムアウト（15秒）
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race<T>([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms)
+    ),
+  ])
 }
-
-const DEFAULT_TIMEOUT = 15000 // 15秒
+const DEFAULT_TIMEOUT = 15000
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
+  const isLoggedIn = computed(() => user.value !== null)
 
   const login = async (form: { email: string; password: string; remember?: boolean }) => {
     try {
-      const userData = await withAbortableTimeout(
-        (signal) => loginApi(form, { signal }),
-        DEFAULT_TIMEOUT
-      )
-      // 念のため payload 確認（204対策の二重安全策）
+      const userData = await withTimeout(loginApi(form), DEFAULT_TIMEOUT)
+      // 念のため payload 確認（環境によっては空レス→直後に取得）
       if (!userData?.id) {
-        // 空レス対策：ログイン自体は成功している可能性があるので fetch で再確認
-        const me = await withAbortableTimeout((signal) => fetchUserApi({ signal }), DEFAULT_TIMEOUT)
+        const me = await withTimeout(fetchUserApi(), DEFAULT_TIMEOUT)
         if (!me?.id) throw new Error('no_user_payload')
         user.value = me
         return me
@@ -48,19 +40,18 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err: any) {
       console.error('❌ ログイン失敗:', err?.name || err?.message || err)
       user.value = null
-      // UI側でタイムアウト文言を出し分けできるよう、エラーはそのまま投げる
       throw err
     }
   }
 
-  const isLoggedIn = computed(() => user.value !== null)
-
-  const register = async (form: { name: string; email: string; password: string; password_confirmation: string }) => {
+  const register = async (form: {
+    name: string
+    email: string
+    password: string
+    password_confirmation: string
+  }) => {
     try {
-      const userData = await withAbortableTimeout(
-        (signal) => registerApi(form, { signal }),
-        DEFAULT_TIMEOUT
-      )
+      const userData = await withTimeout(registerApi(form), DEFAULT_TIMEOUT)
       user.value = userData
     } catch (err) {
       console.error('登録失敗:', err)
@@ -71,7 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      await withAbortableTimeout((signal) => logoutApi({ signal }), DEFAULT_TIMEOUT)
+      await withTimeout(logoutApi(), DEFAULT_TIMEOUT)
       user.value = null
     } catch (err) {
       console.error('ログアウト失敗:', err)
@@ -81,13 +72,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   const fetchUser = async () => {
     try {
-      const me = await withAbortableTimeout(
-        (signal) => fetchUserApi({ signal }),
-        DEFAULT_TIMEOUT
-      )
+      const me = await withTimeout(fetchUserApi(), DEFAULT_TIMEOUT)
       user.value = me
-    } catch {
-      user.value = null
+    } catch (e: any) {
+      if (e?.response?.status === 401) {
+        user.value = null
+      } else {
+        throw e
+      }
     }
   }
 
@@ -96,6 +88,10 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  // getCsrfToken も外側から呼ぶ想定があるならそのまま公開
-  return { user, login, isLoggedIn, register, logout, fetchUser, getCsrfToken, clear }
+  // アプリ起動時の復元用（任意）
+  const init = async () => {
+    await fetchUser()
+  }
+
+  return { user, isLoggedIn, login, register, logout, fetchUser, getCsrfToken, clear, init }
 })
