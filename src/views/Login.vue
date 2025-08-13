@@ -8,17 +8,20 @@
       <p class="desc">メールアドレスとパスワードを入力してください</p>
       <form @submit.prevent="onLogin" class="form">
         <label for="email">メールアドレス</label>
-        <input v-model="form.email" id="email" type="email" required />
+        <input v-model="form.email" id="email" type="email" required :disabled="isSubmitting" />
 
         <label for="password">パスワード</label>
-        <input v-model="form.password" id="password" type="password" required />
+        <input v-model="form.password" id="password" type="password" required :disabled="isSubmitting" />
 
         <label>
-          <input type="checkbox" v-model="form.remember" />
+          <input type="checkbox" v-model="form.remember" :disabled="isSubmitting" />
           ログイン状態を保持する
         </label>
 
-        <button type="submit" class="btn login-button">ログイン</button>
+        <!-- 送信中は非活性＋文言切替 -->
+        <button type="submit" class="btn login-button" :disabled="isSubmitting">
+          {{ isSubmitting ? 'ログイン中...' : 'ログイン' }}
+        </button>
       </form>
       <p id="caution">メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。</p>
     </section>
@@ -33,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import Cookies from 'js-cookie'
@@ -47,23 +50,47 @@ const form = reactive({
   remember: true,
 })
 
+const isSubmitting = ref(false)
+
+// タイムアウトヘルパー
+const withTimeout = <T,>(p: Promise<T>, ms: number) => {
+  return Promise.race<T>([
+    p,
+    new Promise<T>((_, reject) => {
+      const id = setTimeout(() => {
+        clearTimeout(id)
+        reject(new Error('timeout'))
+      }, ms)
+    }),
+  ])
+}
+
+const LOGIN_TIMEOUT_MS = 15000 // 15秒
+
 const onLogin = async () => {
+  if (isSubmitting.value) return // 二重クリック防止
+  isSubmitting.value = true
   try {
-    // ✅ csrf-cookieを叩いてからCookie確認
-    await auth.getCsrfToken()
+    // CSRFトークン取得（タイムアウト付き）
+    await withTimeout(auth.getCsrfToken(), LOGIN_TIMEOUT_MS)
 
     console.log('📦 Cookie:', document.cookie)
     console.log('🍪 XSRF-TOKEN via js-cookie:', Cookies.get('XSRF-TOKEN'))
 
-    const user = await auth.login(form) // ← user を返すようにする
-    router.push(`/dashboard?user=${user.id}`) // ← 安全に id を取得
-  } catch (e) {
-    alert('ログインに失敗しました')
+    // ログイン実行（タイムアウト付き）
+    const user = await withTimeout(auth.login(form), LOGIN_TIMEOUT_MS)
+    router.push(`/dashboard?user=${user.id}`)
+  } catch (e: any) {
+    if (e?.message === 'timeout') {
+      alert('ログイン処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')
+    } else {
+      alert('ログインに失敗しました')
+    }
+  } finally {
+    isSubmitting.value = false
   }
 }
-
 </script>
-
 
 <style>
 .login-wrapper {
@@ -113,7 +140,6 @@ input[type="password"] {
   font-size: 1rem;
 }
 
-
 .btn {
   display: inline-block;
   padding: 16px 24px;
@@ -129,10 +155,21 @@ input[type="password"] {
   background: #59aaff;
   color: white;
   border: none;
+  white-space: nowrap;
+  min-width: 168px;
 }
 
 .login-button:hover {
   background: #1c8cff;
+}
+
+/* 非活性時の色変更 */
+.login-button:disabled {
+  background: #9ccfff; /* 薄い青 */
+  cursor: not-allowed;
+}
+.login-button:disabled:hover {
+  background: #9ccfff; /* ホバー色固定 */
 }
 
 .register-button {

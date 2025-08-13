@@ -8,20 +8,22 @@
       <p class="desc">メールアドレスとパスワードを入力してください</p>
       <form @submit.prevent="onRegister" class="form">
         <label for="name">ユーザー名</label>
-        <input v-model="form.name" id="name" type="text" required />
+        <input v-model="form.name" id="name" type="text" required :disabled="isSubmitting" />
 
         <label for="email">メールアドレス</label>
-        <input v-model="form.email" id="email" type="email" required />
+        <input v-model="form.email" id="email" type="email" required :disabled="isSubmitting" />
 
         <label for="password">パスワード</label>
-        <input v-model="form.password" id="password" type="password" required />
+        <input v-model="form.password" id="password" type="password" required :disabled="isSubmitting" />
 
         <label for="confirm">パスワード（再入力）</label>
-        <input v-model="form.password_confirmation" id="confirm" type="password" required />
+        <input v-model="form.password_confirmation" id="confirm" type="password" required :disabled="isSubmitting" />
 
-        <button type="submit" class="btn register-button">新規登録</button>
+        <!-- 送信中は非活性＋文言切替 -->
+        <button type="submit" class="btn register-button" :disabled="isSubmitting">
+          {{ isSubmitting ? '新規登録中...' : '新規登録' }}
+        </button>
       </form>
-      <p id="caution">アカウント作成には10秒ほどかかります。ボタンを複数回押さず、そのままお待ちください。</p>
     </section>
 
     <!-- ログインへの案内 -->
@@ -34,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -48,12 +50,36 @@ const form = reactive({
   password_confirmation: '',
 })
 
+const isSubmitting = ref(false)
+
+const withTimeout = <T,>(p: Promise<T>, ms: number) => {
+  return Promise.race<T>([
+    p,
+    new Promise<T>((_, reject) => {
+      const id = setTimeout(() => {
+        clearTimeout(id)
+        reject(new Error('timeout'))
+      }, ms)
+    }),
+  ])
+}
+
+const REGISTER_TIMEOUT_MS = 15000 // 15秒
+
 const onRegister = async () => {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
   try {
-    await auth.register(form)
+    await withTimeout(auth.register(form), REGISTER_TIMEOUT_MS)
     router.push('/dashboard')
-  } catch (e) {
-    alert('登録に失敗しました')
+  } catch (e: any) {
+    if (e?.message === 'timeout') {
+      alert('登録処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')
+    } else {
+      alert('登録に失敗しました')
+    }
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>
@@ -84,8 +110,6 @@ const onRegister = async () => {
   padding: 24px;
 }
 
-
-
 .title.green {
   border-left-color: #58d879;
 }
@@ -113,7 +137,6 @@ input[type="password"] {
   font-size: 1rem;
 }
 
-
 .btn {
   display: inline-block;
   padding: 16px 24px;  
@@ -125,15 +148,25 @@ input[type="password"] {
   font-size: 1.1rem;   
 }
 
-
 .register-button {
   background: #58d879;
   color: white;
   border: none;
+  white-space: nowrap; 
+  min-width: 168px;
 }
 
 .register-button:hover {
   background: #2bbd5f;
+}
+
+/* 非活性時の色変更 */
+.register-button:disabled {
+  background: #9ee8b0; /* 薄い緑 */
+  cursor: not-allowed;
+}
+.register-button:disabled:hover {
+  background: #9ee8b0;
 }
 
 .login-button {
@@ -142,6 +175,7 @@ input[type="password"] {
   text-decoration: none;
   display: inline-block;
   margin-top: 12px;
+  white-space: nowrap; 
 }
 
 .login-button:hover {
