@@ -76,7 +76,7 @@ https://rbplus-rank-manager.site
 # 構成図
 ## アーキテクチャ構成図
 
-![Architecture](./public/Architecture.jpg)
+![Architecture](./public/Architecture-20250814.jpg)
 
 このアプリケーションは Vue 3 + Vite を用いたSPAとして構築されており、Laravel（Breeze + Sanctum）と連携したセキュアな認証処理を実装している。インフラはフロントをVercel、バックエンドとDBをRenderにホストし、無料プランのスリープ対策としてGoogle Apps Scriptで定期的にアクセスを行う構成としている。
 
@@ -86,7 +86,7 @@ DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-man
 
 本アプリでは、ユーザー・楽曲・スコア・設置店舗・訪問履歴の5つのテーブルを中心に構成されている。リレーションの明確化と正規化を重視した設計とし、拡張性や保守性を考慮している。
 
-![ER図](./public/er-diagram.png)
+![ER図](./public/er-diagram-20250814.png)
 
 
 # 今後の展望
