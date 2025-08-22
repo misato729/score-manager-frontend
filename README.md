@@ -1,5 +1,13 @@
 # 概要
-サイト名：[REFLEC BEAT plus レベル11 難易度表＆クリアランク管理サイト](https://rbplus-rank-manager.site)
+**REFLEC BEAT plus 難易度表＆スコア管理サイト**
+- **目的**：音楽ゲーム REFLEC BEAT plus のスコア・ランク管理をWebで可能にする
+- **特徴**：
+  - 難易度表を地力ランクごとに閲覧可能
+  - 曲ごとにランク・フルコンボ状況を保存
+  - Google Maps APIで店舗情報＆チェックイン機能
+- **使用技術**：Vue 3 + TypeScript / Laravel 12 / PostgreSQL / Vercel + Render
+- **URL**：[rbplus-rank-manager.site](https://rbplus-rank-manager.site)
+
 
 ![TOP](./public/top.png)
 
