@@ -62,17 +62,21 @@ jobs:
           echo "Preview URL: $URL"
 
       - name: Wait for preview to be ready
+        env:
+          URL: ${{ steps.vercel.outputs.url }}
+          VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
         run: |
-          for i in {1..10}; do
-            if curl -sSfL "${{ steps.vercel.outputs.url }}" > /dev/null; then
+          for i in {1..20}; do
+            if curl -sS -H "x-vercel-protection-bypass: $VERCEL_BYPASS_TOKEN" "$URL" > /dev/null; then
               echo "Preview is ready."
               exit 0
             fi
-            echo "Waiting preview... ($i/10)"
+            echo "Waiting preview... ($i/20)"
             sleep 3
           done
           echo "Preview did not become ready in time." >&2
           exit 1
+        
 
       - name: Install Playwright
         run: npx playwright install --with-deps
@@ -80,4 +84,6 @@ jobs:
       - name: Run E2E on Preview
         env:
           BASE_URL: ${{ steps.vercel.outputs.url }}
+          VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
         run: npm run e2e --if-present
+      
