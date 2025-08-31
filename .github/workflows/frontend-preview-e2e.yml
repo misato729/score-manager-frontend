@@ -57,9 +57,7 @@ jobs:
       - name: Deploy to Vercel (Preview)
         id: vercel
         run: |
-
-          # project.json を使って prebuilt デプロイ
-          URL=$(npx vercel deploy --prebuilt --yes --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
+          URL=$(npx vercel deploy  --yes --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Preview URL: $URL"
 
