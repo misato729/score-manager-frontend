@@ -15,6 +15,7 @@ jobs:
     defaults:
       run:
         working-directory: score-manager-frontend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +24,11 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-          cache-dependency-path: "score-manager-frontend/package-lock.json"
+          # リポジトリルート基準で指定
+          cache-dependency-path: ./score-manager-frontend/package-lock.json
+
+      - name: Debug lockfile
+        run: ls -la ../score-manager-frontend
 
       - name: Install
         run: npm ci
@@ -43,5 +48,5 @@ jobs:
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
-            name: web-dist
-            path: score-manager-frontend/dist
+          name: web-dist
+          path: score-manager-frontend/dist
