@@ -6,16 +6,12 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - "score-manager-frontend/**"
+      - "**"                               # 単一リポなら全体でOK（必要なら絞っても可）
       - ".github/workflows/frontend-ci.yml"
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: score-manager-frontend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -23,22 +19,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # ← cache 設定は一旦オフにします
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      # 手動キャッシュ（最も安定）
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('score-manager-frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # （ビルトインキャッシュが不機嫌なら手動キャッシュに切替可 → 下に例あり）
 
-      - name: Debug show files
+      - name: Debug: show files
         run: |
           pwd
           ls -la
-          ls -la ../score-manager-frontend
 
       - name: Install
         run: npm ci
@@ -59,4 +48,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
-          path: score-manager-frontend/dist
+          path: dist
