@@ -34,7 +34,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Debug: show files
+      - name: Debug show files
         run: |
           pwd
           ls -la
