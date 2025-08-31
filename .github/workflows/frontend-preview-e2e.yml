@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - "**"  # リポジトリ直下がフロントのため全体でOK。必要なら絞ってもOK
+      - "**"
       - ".github/workflows/frontend-preview-e2e.yml"
 
 jobs:
@@ -15,9 +15,6 @@ jobs:
     permissions:
       deployments: write
       contents: read
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
       - uses: actions/checkout@v4
@@ -29,28 +26,38 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install
+      - name: Install deps
         run: npm ci
 
-      # 事前ビルドして prebuilt デプロイを高速化（Vite想定）
-      - name: Build
+      - name: Build (prebuilt deploy 用)
         run: npm run build
 
       - name: Add Vercel CLI
         run: npm i -D vercel
+
+      # ← ここがポイント：IDではなく「プロジェクト名 + 組織スラッグ」でリンク
+      - name: Link Vercel Project (non-interactive)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx vercel link \
+            --project "${{ secrets.VERCEL_PROJECT_NAME }}" \
+            --yes \
+            --token "$VERCEL_TOKEN" \
+            --scope "${{ secrets.VERCEL_ORG_SLUG }}"
 
       - name: Deploy to Vercel (Preview)
         id: vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN"
-          # dist をそのままアップ（--prebuilt）
-          URL=$(npx vercel deploy --prebuilt --yes --token "$VERCEL_TOKEN")
+          # preview 環境のenvも取得（.vercel/project.json が生成済みならOK）
+          npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN" --scope "${{ secrets.VERCEL_ORG_SLUG }}"
+          # dist をそのままアップ
+          URL=$(npx vercel deploy --prebuilt --yes --token "$VERCEL_TOKEN" --scope "${{ secrets.VERCEL_ORG_SLUG }}")
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "Preview URL: $URL"
 
-      # プレビューURLが応答可能になるまで軽く待つ（最大 ~30秒）
       - name: Wait for preview to be ready
         run: |
           for i in {1..10}; do
@@ -64,7 +71,6 @@ jobs:
           echo "Preview did not become ready in time." >&2
           exit 1
 
-      # E2E（Playwright想定。Cypress の場合は置き換え）
       - name: Install Playwright
         run: npx playwright install --with-deps
 
