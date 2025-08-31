@@ -1,0 +1,44 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - "score-manager-frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: score-manager-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "score-manager-frontend/package-lock.json"
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Unit tests (Vitest)
+        run: npm run test:coverage --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+            name: web-dist
+            path: score-manager-frontend/dist
