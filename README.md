@@ -97,6 +97,15 @@ DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-man
 ![ER図](./public/er-diagram-20250814.png)
 
 
+# CI/CD
+本プロジェクトは GitHub Actions + Vercel による CI/CD を導入している。
+- **Lint / Typecheck / Unit Test**: ESLint, tsc, Vitest
+- **Preview Deploy**: PR 作成時に Vercel の Preview 環境へ自動デプロイ  
+- **E2E Test**: Preview URL に対して Playwright による E2E テストを実行  
+  - Vercel の「Protection Bypass for Automation」を利用して GitHub Actions から Preview 環境にアクセス可能に設定
+- **Production Deploy**: main ブランチへの push で Vercel 本番に自動デプロイ
+
+
 # 今後の展望
 - Google Adsenseを使った広告をつけたいが、現在審査落ちである。　→忍者Admaxで広告を設置。
 - ゲームのテクニックや歴史など、wiki的な静的コンテンツを充実させたい。
