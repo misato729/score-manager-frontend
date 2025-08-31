@@ -23,12 +23,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-          # リポジトリルート基準で指定
-          cache-dependency-path: ./score-manager-frontend/package-lock.json
+          # ← cache 設定は一旦オフにします
 
-      - name: Debug lockfile
-        run: ls -la ../score-manager-frontend
+      # 手動キャッシュ（最も安定）
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('score-manager-frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Debug: show files
+        run: |
+          pwd
+          ls -la
+          ls -la ../score-manager-frontend
 
       - name: Install
         run: npm ci
