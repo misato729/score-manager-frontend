@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - "score-manager-frontend/**"
+      - "**"  # リポジトリ直下がフロントのため全体でOK。必要なら絞ってもOK
       - ".github/workflows/frontend-preview-e2e.yml"
 
 jobs:
@@ -18,9 +18,7 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-    defaults:
-      run:
-        working-directory: score-manager-frontend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,13 +26,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-          cache-dependency-path: "score-manager-frontend/package-lock.json"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install
         run: npm ci
 
-      # 事前にビルドして prebuilt でデプロイ（Viteなら速い）
+      # 事前ビルドして prebuilt デプロイを高速化（Vite想定）
       - name: Build
         run: npm run build
 
@@ -47,14 +45,29 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN"
-          # prebuilt を使う（dist をそのままアップ）
+          # dist をそのままアップ（--prebuilt）
           URL=$(npx vercel deploy --prebuilt --yes --token "$VERCEL_TOKEN")
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "Preview URL: $URL"
 
-      # E2E（Playwright想定。Cypressなら置き換え）
+      # プレビューURLが応答可能になるまで軽く待つ（最大 ~30秒）
+      - name: Wait for preview to be ready
+        run: |
+          for i in {1..10}; do
+            if curl -sSfL "${{ steps.vercel.outputs.url }}" > /dev/null; then
+              echo "Preview is ready."
+              exit 0
+            fi
+            echo "Waiting preview... ($i/10)"
+            sleep 3
+          done
+          echo "Preview did not become ready in time." >&2
+          exit 1
+
+      # E2E（Playwright想定。Cypress の場合は置き換え）
       - name: Install Playwright
         run: npx playwright install --with-deps
+
       - name: Run E2E on Preview
         env:
           BASE_URL: ${{ steps.vercel.outputs.url }}
