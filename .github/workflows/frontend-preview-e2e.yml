@@ -1,7 +1,10 @@
 name: Frontend Preview & E2E
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
     paths:
       - "score-manager-frontend/**"
       - ".github/workflows/frontend-preview-e2e.yml"
