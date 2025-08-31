@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - "**"
+      - "score-manager-frontend/**"
       - ".github/workflows/frontend-preview-e2e.yml"
 
 jobs:
@@ -15,7 +15,13 @@ jobs:
     permissions:
       deployments: write
       contents: read
-
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    defaults:
+      run:
+        working-directory: score-manager-frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -23,52 +29,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
+          cache: "npm"
+          cache-dependency-path: "score-manager-frontend/package-lock.json"
 
-      - name: Install deps
+      - name: Install
         run: npm ci
 
-      - name: Build (prebuilt deploy 用)
+      - name: Build
         run: npm run build
-
-      - name: Add Vercel CLI
-        run: npm i -D vercel
-
-      # ← ここがポイント：IDではなく「プロジェクト名 + 組織スラッグ」でリンク
-      - name: Link Vercel Project (non-interactive)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          npx vercel link \
-            --project "${{ secrets.VERCEL_PROJECT_NAME }}" \
-            --yes \
-            --token "$VERCEL_TOKEN" \
-            --scope "${{ secrets.VERCEL_ORG_SLUG }}"
 
       - name: Deploy to Vercel (Preview)
         id: vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-
-          # dist をそのままアップ
-          URL=$(npx vercel deploy --prebuilt --yes --token "$VERCEL_TOKEN" --scope "${{ secrets.VERCEL_ORG_SLUG }}")
+          URL=$(npx vercel deploy --prebuilt --yes \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID")
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "Preview URL: $URL"
-
-      - name: Wait for preview to be ready
-        run: |
-          for i in {1..10}; do
-            if curl -sSfL "${{ steps.vercel.outputs.url }}" > /dev/null; then
-              echo "Preview is ready."
-              exit 0
-            fi
-            echo "Waiting preview... ($i/10)"
-            sleep 3
-          done
-          echo "Preview did not become ready in time." >&2
-          exit 1
 
       - name: Install Playwright
         run: npx playwright install --with-deps
