@@ -24,7 +24,7 @@ jobs:
 
       # （ビルトインキャッシュが不機嫌なら手動キャッシュに切替可 → 下に例あり）
 
-      - name: Debug: show files
+      - name: Debug show files
         run: |
           pwd
           ls -la
