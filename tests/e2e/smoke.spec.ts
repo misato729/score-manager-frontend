@@ -7,7 +7,7 @@ test.describe('スモークテスト - 本番環境', () => {
     await page.fill('#email', 'test@example.com');
     await page.fill('#password', 'password');
     await page.click('button[type="submit"]');
-    await page.waitForURL(`${process.env.BASE_URL}/dashboard`);
+    await page.waitForURL(/\/dashboard/);
     await expect(page.locator('body')).toBeVisible();
   });
 
