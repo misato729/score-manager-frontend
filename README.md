@@ -1,4 +1,4 @@
-deploy test
+deploy test 2
 
 # 概要
 **REFLEC BEAT plus 難易度表＆スコア管理サイト**
