@@ -1,3 +1,5 @@
+deploy test
+
 # 概要
 **REFLEC BEAT plus 難易度表＆スコア管理サイト**
 - **目的**：音楽ゲーム REFLEC BEAT plus のスコア・ランク管理をWebで可能にする
