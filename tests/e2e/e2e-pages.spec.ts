@@ -16,9 +16,13 @@ const pagesToTest = [
 
 test.describe('E2Eページ表示確認 - ログイン後', () => {
   test.beforeEach(async ({ page }) => {
+    page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+    page.on('requestfailed', req => console.log('REQUEST FAIL:', req.url(), req.failure()?.errorText));
+    page.on('response', res => console.log('RESPONSE:', res.url(), res.status()));
+
     await page.goto('/sanctum/csrf-cookie');
     await page.goto('/login');
-    await page.waitForSelector('#email');
+    await page.waitForSelector('#email',{ timeout: 5000 });
 
     await page.fill('#email', 'test@example.com');
     await page.fill('#password', 'password');
