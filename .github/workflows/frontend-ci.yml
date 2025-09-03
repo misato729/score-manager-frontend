@@ -96,7 +96,7 @@ jobs:
       - name: Add Vercel CLI
         run: npm i -D vercel
 
-      - name: Deploy to Vercel (Production: main branch)
+      - name: Deploy to Vercel (Production= main branch)
         run: |
           npx vercel deploy --prod --yes --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
 
