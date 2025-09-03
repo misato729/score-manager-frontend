@@ -57,7 +57,7 @@ jobs:
       - name: Add Vercel CLI
         run: npm i -D vercel
 
-      - name: Deploy to Vercel (Preview: preview branch)
+      - name: Deploy to Vercel (Preview= preview branch)
         id: vercel
         run: |
           URL=$(npx vercel deploy --yes --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
