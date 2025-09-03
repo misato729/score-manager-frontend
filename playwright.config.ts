@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  timeout: 60_000,
+  timeout: 10_000,
   use: {
     baseURL: process.env.BASE_URL,                   // ← CIから注入
     extraHTTPHeaders: process.env.VERCEL_BYPASS_TOKEN
