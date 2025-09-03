@@ -16,7 +16,8 @@ const pagesToTest = [
 
 test.describe('E2Eページ表示確認 - ログイン後', () => {
   test.beforeEach(async ({ page }) => {
-    // ログインページへ移動
+    await page.goto(`${process.env.BASE_URL}/sanctum/csrf-cookie`);
+    // ここで XSRF-TOKEN を取得してから /login へ
     await page.goto(`${process.env.BASE_URL}/login`);
     await page.waitForSelector('#email');
 
