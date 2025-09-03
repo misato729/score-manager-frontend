@@ -1,6 +1,9 @@
 name: Frontend Preview & E2E & Production Deploy
+
 on:
-  push: { branches: [ main ] }
+  push:
+    branches: [ main ]
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,27 +32,25 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
-      # ① ローカルでVercelビルドを作る（再現性＆速度）
       - name: Add Vercel CLI
         run: npm i -D vercel
-      - name: Write .vercel/project.json
-        run: |
-          mkdir -p .vercel
-          echo "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\"}" > .vercel/project.json
+
+      # 🔑 ここで設定を取得する
+      - name: Vercel pull (preview)
+        run: npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
       - name: Vercel build (local)
         run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
 
-      # ② そのまま prebuilt をデプロイ（リモート再ビルドなし）
       - name: Deploy to Vercel (Preview, prebuilt)
         id: deploy
         run: |
           URL=$(npx vercel deploy --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
-      # ③ ヘルスチェック（保護ヘッダとlocation追随）
       - name: Wait for preview to be ready
         run: |
           set -e
@@ -68,21 +69,21 @@ jobs:
           echo "Preview did not become ready in time." >&2
           exit 1
 
-      # ④ Playwright
       - name: Install Playwright
         run: npx playwright install --with-deps
+
       - name: Run Smoke Test
         env:
           BASE_URL: ${{ steps.deploy.outputs.url }}
           VERCEL_BYPASS_TOKEN: ${{ env.VERCEL_BYPASS_TOKEN }}
         run: npx playwright test tests/e2e/smoke.spec.ts
+
       - name: Run Full E2E Test
         env:
           BASE_URL: ${{ steps.deploy.outputs.url }}
           VERCEL_BYPASS_TOKEN: ${{ env.VERCEL_BYPASS_TOKEN }}
         run: npx playwright test tests/e2e/e2e-pages.spec.ts
 
-      # ⑤ 失敗時のトレース/ビデオ/スクショを保存
       - if: always()
         name: Upload Playwright Artifacts
         uses: actions/upload-artifact@v4
@@ -108,18 +109,19 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install
+
+      - name: Install dependencies
         run: npm ci
 
       - name: Add Vercel CLI
         run: npm i -D vercel
-      - name: Write .vercel/project.json
-        run: |
-          mkdir -p .vercel
-          echo "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\"}" > .vercel/project.json
 
-      # 本番も prebuilt で一貫性確保
+      # 🔑 本番用設定を取得
+      - name: Vercel pull (production)
+        run: npx vercel pull --yes --environment=production --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
       - name: Vercel build (local)
         run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
       - name: Deploy to Production (prebuilt)
         run: npx vercel deploy --prod --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
