@@ -1,49 +1,35 @@
 name: Frontend CI
-
 on:
-  push:
-    branches: [ main ]
+  push: { branches: [ main ] }
   pull_request:
     branches: [ main ]
     paths:
-      - "**"                               # 単一リポなら全体でOK（必要なら絞っても可）
+      - "**"
       - ".github/workflows/frontend-ci.yml"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: package-lock.json
-
-      # （ビルトインキャッシュが不機嫌なら手動キャッシュに切替可 → 下に例あり）
-
-      - name: Debug show files
-        run: |
-          pwd
-          ls -la
-
       - name: Install
         run: npm ci
-
       - name: Lint
         run: npm run lint --if-present
-
       - name: Typecheck
         run: npm run typecheck --if-present
-
       - name: Unit tests (Vitest)
         run: npm run test:coverage --if-present
-
       - name: Build
         run: npm run build
-
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:

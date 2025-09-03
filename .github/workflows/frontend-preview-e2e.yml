@@ -1,8 +1,9 @@
 name: Frontend Preview & E2E & Production Deploy
-
 on:
-  push:
-    branches: [ main ]
+  push: { branches: [ main ] }
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   preview-and-test:
@@ -18,62 +19,78 @@ jobs:
       VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
 
     outputs:
-      preview_url: ${{ steps.vercel.outputs.url }}
+      preview_url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
+      # ① ローカルでVercelビルドを作る（再現性＆速度）
+      - name: Add Vercel CLI
+        run: npm i -D vercel
       - name: Write .vercel/project.json
         run: |
           mkdir -p .vercel
           echo "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\"}" > .vercel/project.json
+      - name: Vercel build (local)
+        run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
 
-      - name: Add Vercel CLI
-        run: npm i -D vercel
-
-      - name: Deploy to Vercel (Preview)
-        id: vercel
+      # ② そのまま prebuilt をデプロイ（リモート再ビルドなし）
+      - name: Deploy to Vercel (Preview, prebuilt)
+        id: deploy
         run: |
-          URL=$(npx vercel deploy --yes --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
+          URL=$(npx vercel deploy --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
+      # ③ ヘルスチェック（保護ヘッダとlocation追随）
       - name: Wait for preview to be ready
         run: |
-          for i in {1..20}; do
-            if curl -sS -H "x-vercel-protection-bypass: $VERCEL_BYPASS_TOKEN" "${{ steps.vercel.outputs.url }}" > /dev/null; then
-              echo "Preview is ready."
+          set -e
+          URL="${{ steps.deploy.outputs.url }}"
+          for i in {1..40}; do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" \
+              -H "x-vercel-protection-bypass: $VERCEL_BYPASS_TOKEN" \
+              --location "$URL/robots.txt")
+            if [ "$code" = "200" ]; then
+              echo "Preview is ready: $URL"
               exit 0
             fi
-            echo "Waiting preview... ($i/20)"
+            echo "Waiting preview... ($i/40, got $code)"
             sleep 3
           done
           echo "Preview did not become ready in time." >&2
           exit 1
 
+      # ④ Playwright
       - name: Install Playwright
         run: npx playwright install --with-deps
-
       - name: Run Smoke Test
         env:
-          BASE_URL: ${{ steps.vercel.outputs.url }}
+          BASE_URL: ${{ steps.deploy.outputs.url }}
+          VERCEL_BYPASS_TOKEN: ${{ env.VERCEL_BYPASS_TOKEN }}
         run: npx playwright test tests/e2e/smoke.spec.ts
-
       - name: Run Full E2E Test
         env:
-          BASE_URL: ${{ steps.vercel.outputs.url }}
+          BASE_URL: ${{ steps.deploy.outputs.url }}
+          VERCEL_BYPASS_TOKEN: ${{ env.VERCEL_BYPASS_TOKEN }}
         run: npx playwright test tests/e2e/e2e-pages.spec.ts
+
+      # ⑤ 失敗時のトレース/ビデオ/スクショを保存
+      - if: always()
+        name: Upload Playwright Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report
+            test-results
 
   deploy-to-production:
     runs-on: ubuntu-latest
@@ -87,27 +104,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
+      - name: Add Vercel CLI
+        run: npm i -D vercel
       - name: Write .vercel/project.json
         run: |
           mkdir -p .vercel
           echo "{\"projectId\":\"$VERCEL_PROJECT_ID\",\"orgId\":\"$VERCEL_ORG_ID\"}" > .vercel/project.json
 
-      - name: Add Vercel CLI
-        run: npm i -D vercel
-
-      - name: Deploy to Production
-        run: |
-          npx vercel deploy --prod --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+      # 本番も prebuilt で一貫性確保
+      - name: Vercel build (local)
+        run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+      - name: Deploy to Production (prebuilt)
+        run: npx vercel deploy --prod --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
