@@ -14,7 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm, cache-dependency-path: package-lock.json }
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run lint --if-present
       - run: npm run typecheck --if-present
@@ -31,22 +34,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with:
+          node-version: 20
+          cache: npm
       - run: npm ci
-      - run: npm i -D vercel
+      - name: Add Vercel CLI (devDeps)
+        run: npm i -D vercel
+
       - name: vercel pull (preview)
         run: npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
       - name: vercel build
-        run: npx vercel build --token "$VERCEL_TOKEN"
+        run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
       - id: deploy
         name: vercel deploy (prebuilt)
         run: |
           url=$(npx vercel deploy --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
+          echo "Deployed to: $url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
       - name: Alias to fixed preview domain (protected)
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
-        run: vercel alias set "$DEPLOY_URL" preview.rbplus-rank-manager.site --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+        run: npx vercel alias set "$DEPLOY_URL" preview.rbplus-rank-manager.site --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
 
   preview-e2e:
     runs-on: ubuntu-latest
@@ -57,9 +68,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with:
+          node-version: 20
+          cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps
+
       - name: Wait for readiness (200 only)
         run: |
           for i in {1..30}; do
@@ -69,8 +83,10 @@ jobs:
             if [ "$code" = "200" ]; then echo "OK (200)"; break; fi
             echo "Not ready ($code)"; sleep 5
           done
+
       - name: Run E2E on fixed preview
         run: npx playwright test tests/e2e/
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
