@@ -38,6 +38,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+
       - name: Add Vercel CLI (devDeps)
         run: npm i -D vercel
 
@@ -74,15 +75,35 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps
 
-      - name: Wait for readiness (200 only)
+      # Preview Protection の自動バイパス検証（未設定/相違を即検出）
+      - name: Verify preview protection bypass works
+        env:
+          TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
         run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::VERCEL_BYPASS_TOKEN is not set. Set the Automation Bypass Token from Vercel Project Settings (Protection)."
+            exit 1
+          fi
+
+          # 1) クエリ方式で cookie を事前に設定
+          curl -s -I "${BASE_URL}/?vercel-protection-bypass=${TOKEN}" >/dev/null || true
+
+          # 2) ヘッダ方式で /login へ最大30回リトライ（約150秒）
+          ok=""
           for i in {1..30}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "x-vercel-protection-bypass: $VERCEL_BYPASS_TOKEN" \
-              "$BASE_URL/login")
-            if [ "$code" = "200" ]; then echo "OK (200)"; break; fi
-            echo "Not ready ($code)"; sleep 5
+              -H "x-vercel-protection-bypass: ${TOKEN}" \
+              "${BASE_URL}/login")
+            if [ "$code" = "200" ]; then
+              echo "Preview is reachable with bypass (200)"; ok="yes"; break
+            fi
+            echo "Still protected or not ready ($code). Retry $i/30..."; sleep 5
           done
+
+          if [ -z "$ok" ]; then
+            echo "::error::Preview returned 401 even with bypass. Re-check that VERCEL_BYPASS_TOKEN is the Automation Bypass Token for THIS project."
+            exit 1
+          fi
 
       - name: Run E2E on fixed preview
         run: npx playwright test tests/e2e/
