@@ -1,0 +1,131 @@
+name: Preview CI/CD
+
+on:
+  push:
+    branches: [ preview ]
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm run typecheck --if-present
+      - run: npm run test:coverage --if-present
+
+  deploy-and-alias:
+    runs-on: ubuntu-latest
+    needs: ci
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_SLUG: ${{ secrets.VERCEL_ORG_SLUG }}
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Add Vercel CLI (devDeps)
+        run: npm i -D vercel
+
+      - name: vercel pull (preview)
+        run: npx vercel pull --yes --environment=preview --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
+      - name: vercel build
+        run: npx vercel build --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
+      - id: deploy
+        name: vercel deploy (prebuilt)
+        run: |
+          url=$(npx vercel deploy --prebuilt --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"})
+          echo "Deployed to: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Alias to fixed preview domain (protected)
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: npx vercel alias set "$DEPLOY_URL" preview.rbplus-rank-manager.site --token "$VERCEL_TOKEN" ${VERCEL_ORG_SLUG:+--scope "$VERCEL_ORG_SLUG"}
+
+  preview-e2e:
+    runs-on: ubuntu-latest
+    needs: deploy-and-alias
+    env:
+      BASE_URL: https://preview.rbplus-rank-manager.site
+      VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+
+      # === Preview Protection の自動バイパス適用（cookie jar を用いて確実に）===
+      - name: Verify preview protection bypass works (cookie + header + query)
+        env:
+          TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::VERCEL_BYPASS_TOKEN is not set. In Vercel > Project > Settings > Protection, copy 'Automation Bypass Token' of THIS project and add it as a secret."
+            exit 1
+          fi
+
+          echo "Bypass token length: ${#TOKEN}"  # 値は出さないが空判定の補助
+
+          # 1) クエリ方式で cookie を発行し、cookie jar に保存
+          rm -f .cookies
+          curl -sS -c .cookies "${BASE_URL}/?vercel-protection-bypass=${TOKEN}" -o /dev/null
+
+          # 2) cookie を使って /login を最大30回リトライ
+          ok=""
+          for i in {1..30}; do
+            code=$(curl -sS -b .cookies -o /dev/null -w "%{http_code}" "${BASE_URL}/login")
+            if [ "$code" = "200" ]; then
+              echo "Bypass via cookie works (200)."; ok="yes"; break
+            fi
+            echo "Cookie not accepted yet ($code). Retry $i/30..."; sleep 5
+          done
+
+          # 3) まだダメなら、ヘッダ方式とクエリ直付けを併用して最終確認
+          if [ -z "$ok" ]; then
+            code_h=$(curl -sS -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: ${TOKEN}" "${BASE_URL}/login")
+            code_q=$(curl -sS -o /dev/null -w "%{http_code}" "${BASE_URL}/login?vercel-protection-bypass=${TOKEN}")
+            echo "Header trial: $code_h / Query-on-request trial: $code_q"
+            if [ "$code_h" = "200" ] || [ "$code_q" = "200" ]; then
+              echo "Bypass via header/query works (200)."
+            else
+              echo "::error::401 persists even with cookie/header/query methods.
+              - Confirm the token is from THIS project (Settings > Protection > Automation Bypass Token).
+              - Confirm 'preview.rbplus-rank-manager.site' is attached to the SAME project as the deployment.
+              - If you have multiple teams, ensure --scope and token belong to that team."
+              exit 1
+            fi
+          fi
+
+      - name: Run E2E on fixed preview
+        env:
+          # Playwright 側でもヘッダが使えるように（extraHTTPHeaders）
+          VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
+        run: npx playwright test tests/e2e/
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-preview
+          path: playwright-report
