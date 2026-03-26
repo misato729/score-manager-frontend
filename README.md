@@ -1,16 +1,14 @@
-deploy test 3
-
 # 概要
-**REFLEC BEAT plus 難易度表＆スコア管理サイト**
-- **目的**：音楽ゲーム REFLEC BEAT plus のスコア・ランク管理をWebで可能にする
-- **特徴**：
-  - 難易度表を地力ランクごとに閲覧可能
-  - 曲ごとにランク・フルコンボ状況を保存
-  - Google Maps APIで店舗情報＆チェックイン機能
+**REFLEC BEAT plus Lv11 難易度表＆クリアランク管理サイト**
+- **目的**：音楽ゲーム REFLEC BEAT plus のLv11のクリアランク・フルコンボ状況の管理を行う。
+- **機能**：
+  - Lv11の譜面を非公式に10段階に定義した「難易度表」を閲覧可能
+  - 譜面ごとにクリアランク・フルコンボ状況を保存
+  - Google Maps APIで店舗情報閲覧＆チェックイン機能
 - **使用技術**：Vue 3 + TypeScript / Laravel 12 / PostgreSQL / Vercel + Render
-- **URL**：[rbplus-rank-manager.site](https://rbplus-rank-manager.site)
+- **URL**：[https://rbplus-rank-manager.site](https://rbplus-rank-manager.site)
 
-
+- **画面イメージ**
 ![TOP](./public/top.png)
 
 ![TIER](./public/tier.png)
@@ -18,30 +16,28 @@ deploy test 3
 ![MAP](./public/map.png)
 
 ## 背景
-音楽ゲーム上級者の間では、公式難易度に加えて有志による「難易度表」が活用されることが多い。<br>
-例えばKONAMIの人気音楽ゲーム「beatmaniaⅡDX」は最高レベルは12であるが、Lv12の中でも難易度の差が激しく、有志によってLv12をさらに数段階に分ける試みがなされている。<br>
+音楽ゲーム上級者の間では、公式難易度に加えて有志により作成された非公式の「難易度表」が活用されることが多い。<br>
+例えばKONAMIの人気音楽ゲーム「beatmania ⅡDX」は最高レベルは12であるが、Lv12の中でも難易度の差が激しく、有志によってLv12をさらに数段階に分ける試みがなされている。<br>
 近年では、難易度表をWebアプリ化してクリアランクを管理する試みがなされている。<br>
 
 ※参考：<br>
 - [12参考表(地力表)支援サイト](https://sp12.iidx.app)
 - [CPI](https://cpi.makecir.com)
 <br>
-この難易度表の存在により、プレイヤーは適切な難易度の曲を選ぶことができる上、自分のプレイ進捗を可視化できる。難易度表はプレイヤーのモチベーション向上に大きな貢献をしていると言えるだろう。<br>
+この難易度表の存在により、プレイヤーは実力に見合った適切な難易度の曲を選ぶことができる上、自分のプレイ進捗を可視化できる。<br>
 <br>
-一方、同じくKONAMIの音楽ゲーム「REFLEC BEAT」は一時期繁栄していたが、近年はゲームのプレイ人口が激減している。<br>
-私はこのREFLEC BEATが大好きであり、SNSで「オワコン」と言われる現状に心を痛めてきた。<br>
-そこで、本作品においても難易度表兼管理アプリを開発することによって、かつてのプレイヤーのモチベーションを再燃させ、本気でKONAMIを動かすつもりで再びREFLEC BEATを繁栄させたいと思い開発に至った。<br>
-なお、「REFLEC BEAT」シリーズにはアーケード版の「REFLEC BEAT」とiOS版の「REFLEC BEAT plus」があるが、今回は手軽に遊べるiOS版の後者を対象とした。<br>
+一方、同じくKONAMIの音楽ゲーム「REFLEC BEAT」は「beatmania ⅡDX」と比べるとマイナーなゲームであり、このようなWebアプリがまだ存在していない。<br>
+そこで私は、「REFLEC BEAT」においても上記のような難易度表のWebアプリを作成し、プレイヤーのモチベーション維持に貢献するため開発に至った。
 
 ## URL
-https://rbplus-rank-manager.site
+https://rbplus-rank-manager.site<br>
 
 ※検証用アカウント<br>
 メールアドレス：test@example.com<br>
 パスワード：password<br>
 
 # 機能一覧
-本アプリの機能は、メインの「難易度表閲覧・スコア管理」機能と、サブ要素として開発した「設置店舗閲覧・行脚」機能の2つに分かれる。
+本アプリの機能は、メインの「難易度表閲覧・クリアランク管理」機能と、サブ要素として開発した「設置店舗閲覧・行脚」機能の2つに分かれる。
 ## 難易度表閲覧・スコア管理
 ### 非ログインユーザー向け
 - 「REFLEC BEAT plus」収録のレベル11の全譜面について、地力ごとに分類したものを表示する（地力は非公式の10段階：地力F〜地力S+）
@@ -77,8 +73,8 @@ https://rbplus-rank-manager.site
 |---------------|---------------------------------------------------------|
 | フロントエンド | Vue 3, Vite, TypeScript, Pinia, Vue Router, Axios     |
 | バックエンド   | Laravel 12, Laravel Breeze, Laravel Sanctum, Laravel Blade     |
-| インフラ       | Vercel（フロントエンド）, Render（バックエンド / DB）           |
-| データベース   | SQLite（ローカル環境）, PostgreSQL（本番環境／Render）         |
+| インフラ       | Vercel（フロントエンド）, Render（バックエンド/DB）           |
+| データベース   | SQLite（ローカル環境）, PostgreSQL（本番環境/Render）         |
 | デザイン       | Figma（画面設計）|
 | その他         | Google Maps API, GitHub, ChatGPT |
 
@@ -106,10 +102,3 @@ DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-man
 - **E2E Test**: Preview URL に対して Playwright による E2E テストを実行  
   - Vercel の「Protection Bypass for Automation」を利用して GitHub Actions から Preview 環境にアクセス可能に設定
 - **Production Deploy**: main ブランチへの push で Vercel 本番に自動デプロイ
-
-
-# 今後の展望
-- Google Adsenseを使った広告をつけたいが、現在審査落ちである。　→忍者Admaxで広告を設置。
-- ゲームのテクニックや歴史など、wiki的な静的コンテンツを充実させたい。
-- Laravel Bladeを使ってバックエンドで店舗管理画面や楽曲管理画面を作成したい。 →2025年8月14日現在、店舗管理画面のみ開発済み。
-- ユーザーから新規登録の際のバグが報告されているので、情報が集まり次第検証と改善をしたい。→APIのロジック修正および新規登録ボタンを押下後に非活性化することで対応。
