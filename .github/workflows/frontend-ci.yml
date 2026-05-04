@@ -175,6 +175,8 @@ jobs:
       # ここは本番のカスタムドメイン
       BASE_URL: https://rbplus-rank-manager.site
       VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
