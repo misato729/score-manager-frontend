@@ -27,4 +27,5 @@ jobs:
       - name: Run Smoke Test
         env:
           BASE_URL: https://rbplus-rank-manager.site
+          VERCEL_BYPASS_TOKEN: ${{ secrets.VERCEL_BYPASS_TOKEN }}
         run: npx playwright test tests/e2e/smoke.spec.ts
