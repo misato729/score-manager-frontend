@@ -13,13 +13,10 @@ app.use(pinia)
 app.use(router)
 
 const key = import.meta.env.VITE_GOOGLE_API_KEY
-if (import.meta.env.DEV) {
-  console.log('✅ 実際のAPIキー:', key)
-}
 
 app.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDiNJLDZz_STC2tqG-14imShfnkPGgcKp4',
+    key,
     libraries: 'places',
     v: 'weekly',
     loading: 'async',
