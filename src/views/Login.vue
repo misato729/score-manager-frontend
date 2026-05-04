@@ -59,7 +59,7 @@ const onLogin = async () => {
     if (e?.message === 'timeout') {
       alert('ログイン処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')
     } else {
-      console.error('login failed', e?.response?.status, e?.response?.data)
+      console.error('login failed', e?.response?.status)
       alert('ログインに失敗しました')
     }
   } finally {
