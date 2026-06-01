@@ -14,3 +14,12 @@ export const getDistance = (lat1: number, lon1: number, lat2: number, lon2: numb
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
 }
+
+export const formatVisitSuccessMessage = (
+  shopName: string | undefined,
+  message = 'チェックインが完了しました',
+): string => {
+  const trimmedShopName = shopName?.trim()
+
+  return trimmedShopName ? `${trimmedShopName}\nに${message}` : message
+}
