@@ -62,6 +62,7 @@
   import AdNinja from '@/components/common/AdNinja.vue'
   import {
     extractPrefecture,
+    formatVisitSuccessMessage,
     getDistance,
   } from '@/utils/shop'
     import type { Shop } from '@/types'
@@ -185,7 +186,9 @@
   async function recordVisit(shopId: number) {
   try {
     const res = await api.post('/api/visit', { shop_id: shopId })
-    alert(res.data.message || '✅ 行脚しました！')
+    const shopName = shops.value.find((shop) => shop.id === shopId)?.name
+    const message = res.data.message || 'チェックインが完了しました'
+    alert(formatVisitSuccessMessage(shopName, message))
 
     if (!visitedShopIds.value.includes(shopId)) {
       visitedShopIds.value.push(shopId)

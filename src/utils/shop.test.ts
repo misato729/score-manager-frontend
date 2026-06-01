@@ -1,6 +1,6 @@
 // src/utils/shop.test.ts
 import { describe, it, expect } from 'vitest'
-import { extractPrefecture, getDistance } from './shop'
+import { extractPrefecture, formatVisitSuccessMessage, getDistance } from './shop'
 
 describe('extractPrefecture', () => {
   it('住所から都道府県名を抽出できる', () => {
@@ -24,5 +24,19 @@ describe('getDistance', () => {
     const b = getDistance(35.710063, 139.8107, 35.681236, 139.767125)
     expect(a).toBeGreaterThan(0)
     expect(Math.abs(a - b)).toBeLessThan(1e-6 * a)
+  })
+})
+
+describe('formatVisitSuccessMessage', () => {
+  it('店舗名を含むチェックイン完了メッセージを返す', () => {
+    expect(formatVisitSuccessMessage('ゲームセンター東京', 'チェックインが完了しました')).toBe(
+      'ゲームセンター東京\nにチェックインが完了しました',
+    )
+  })
+
+  it('店舗名が空の場合はAPIメッセージだけを返す', () => {
+    expect(formatVisitSuccessMessage('', 'チェックインが完了しました')).toBe(
+      'チェックインが完了しました',
+    )
   })
 })
