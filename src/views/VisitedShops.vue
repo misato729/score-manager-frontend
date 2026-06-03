@@ -1,6 +1,6 @@
 <template>
   <div class="visited-shops">
-    <h1>行脚店舗一覧</h1>
+    <h1>{{ pageTitle }}</h1>
 
     <!-- ロード中表示 -->
     <p v-if="isLoading">Now Loading...</p>
@@ -53,14 +53,29 @@ interface VisitedShop {
   name: string
   address: string
   created_at: string
+  user_name?: string
 }
 
+type VisitedShopsResponse =
+  | VisitedShop[]
+  | {
+      user_name?: string
+      visited_shops?: VisitedShop[]
+    }
+
 const visitedList = ref<VisitedShop[]>([])
+const displayUserName = ref('')
 const isLoading = ref(true)           // ✅ 追加：ロード状態
 const errorMessage = ref<string>('')  // ✅ 追加：エラーメッセージ（任意）
 
 const route = useRoute()
 const userId = computed(() => route.query.user as string)
+const pageTitle = computed(() => {
+  if (userId.value && displayUserName.value) {
+    return `${displayUserName.value}さんの行脚履歴`
+  }
+  return '行脚店舗一覧'
+})
 
 onMounted(async () => {
   try {
@@ -69,8 +84,17 @@ onMounted(async () => {
       errorMessage.value = 'ユーザーIDが指定されていません。'
       return
     }
-    const res = await api.get(`/api/visited-shops?user=${userId.value}`)
-    visitedList.value = res.data
+    const res = await api.get<VisitedShopsResponse>('/api/visited-shops', {
+      params: { user: userId.value },
+    })
+
+    if (Array.isArray(res.data)) {
+      visitedList.value = res.data
+      displayUserName.value = res.data[0]?.user_name ?? ''
+    } else {
+      visitedList.value = res.data.visited_shops ?? []
+      displayUserName.value = res.data.user_name ?? ''
+    }
   } catch (err: any) {
     console.error('❌ 行脚店舗の取得に失敗しました', err)
     errorMessage.value =
