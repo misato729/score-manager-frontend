@@ -34,6 +34,7 @@ export interface Shop {
   id: number
   name: string
   address: string
+  prefecture_code?: number | null
   price: number
   number_of_machine: number
   description: string

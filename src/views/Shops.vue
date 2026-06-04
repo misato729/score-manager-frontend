@@ -265,7 +265,9 @@
           getDistanceFromLatLng(a.lat, a.lng) - getDistanceFromLatLng(b.lat, b.lng)
       )
     }
-    return [...filteredShops.value].sort((a, b) => a.id - b.id)
+    return [...filteredShops.value].sort(
+      (a, b) => (a.prefecture_code ?? 999) - (b.prefecture_code ?? 999) || a.id - b.id
+    )
   })
   
   function searchNearby() {
