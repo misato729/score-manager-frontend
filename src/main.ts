@@ -23,7 +23,11 @@ app.use(VueGoogleMaps, {
   },
 })
 
-// ✅ CSRFトークンを取得してからマウント
-api.get('/sanctum/csrf-cookie').then(() => {
-  app.mount('#app')
-})
+// バックエンド未起動時も、公開ページは表示できるようにする
+api.get('/sanctum/csrf-cookie')
+  .catch((error) => {
+    console.warn('CSRF cookieの取得に失敗しました', error)
+  })
+  .finally(() => {
+    app.mount('#app')
+  })
