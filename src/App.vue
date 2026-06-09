@@ -5,8 +5,12 @@ import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
-onMounted(() => {
-  authStore.fetchUser()
+onMounted(async () => {
+  try {
+    await authStore.fetchUser()
+  } catch (error) {
+    console.warn('ユーザー情報の取得に失敗しました', error)
+  }
 })
 </script>
 
@@ -45,4 +49,3 @@ html, body {
 
 
 </style>
-
