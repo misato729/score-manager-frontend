@@ -1,24 +1,23 @@
 <template>
   <section
     id="map"
-    class="card"
-    style="max-width: 1000px; position: relative;"
+    class="map-container card"
+    :class="{ 'is-fullscreen': isFullscreen }"
   >
-    <!-- ✅ スマホのみ表示される全画面ボタン -->
     <button
-      v-if="isMobile && !showOverlayMap"
-      @click="showOverlayMap = true"
+      type="button"
       class="fullscreen-btn"
+      :aria-label="isFullscreen ? '地図の全画面表示を終了' : '地図を全画面表示'"
+      @click="toggleFullscreen"
     >
-      地図を全画面で見る
+      {{ isFullscreen ? '✕ 閉じる' : '地図を全画面で見る' }}
     </button>
 
-    <!-- ✅ 通常地図 -->
     <GMapMap
       :center="center"
       :api-key="GOOGLE_MAP_API_KEY"
       :zoom="11"
-      style="width: 100%; height: 600px"
+      class="shop-map"
       @bounds_changed="$emit('map-ready')"
       :options="mapOptions"
     >
@@ -50,48 +49,11 @@
 
     <!-- ✅ 現在地ボタン -->
     <button @click="$emit('move-center')" class="locate-btn">📍 現在地</button>
-
-    <!-- ✅ 全画面オーバーレイ地図 -->
-    <div v-if="showOverlayMap" class="overlay-map">
-      <button @click="showOverlayMap = false" class="close-btn">✕</button>
-
-      <GMapMap
-        :center="center"
-        :api-key="GOOGLE_MAP_API_KEY"
-        :zoom="11"
-        style="width: 100vw; height: 100vh"
-        @bounds_changed="$emit('map-ready')"
-        :options="mapOptions"
-      >
-        <GMapMarker
-          v-if="userLocation && currentLocationIcon"
-          :position="userLocation"
-          :icon="currentLocationIcon"
-        />
-
-        <GMapMarker
-          v-for="shop in shops"
-          :key="shop.id"
-          :position="{ lat: Number(shop.lat), lng: Number(shop.lng) }"
-          :icon="getMarkerIcon(shop.id)"
-          @click="$emit('marker-click', shop)"
-        >
-          <template v-if="shop.isOpen">
-            <ShopInfoWindow
-              :shop="shop"
-              :isNear="isNear(shop)"
-              @close="shop.isOpen = false"
-              @record="onRecordVisit(shop.id)"
-            />
-          </template>
-        </GMapMarker>
-      </GMapMap>
-    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { Shop } from '@/types'
 import ShopInfoWindow from './ShopInfoWindow.vue'
 
@@ -113,17 +75,8 @@ const emit = defineEmits<{
   (e: 'map-ready'): void
 }>()
 
-const showOverlayMap = ref(false)
-const isMobile = ref(false)
-
-onMounted(() => {
-  const checkMobile = () => {
-    isMobile.value = window.matchMedia('(max-width: 768px)').matches
-  }
-
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-})
+const isFullscreen = ref(false)
+let previousBodyOverflow = ''
 
 const mapOptions = {
   fullscreenControl: true,
@@ -131,6 +84,26 @@ const mapOptions = {
   mapTypeControl: false,
   streetViewControl: false,
   gestureHandling: 'greedy',
+}
+
+watch(isFullscreen, async (fullscreen) => {
+  if (fullscreen) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = previousBodyOverflow
+  }
+
+  await nextTick()
+  window.dispatchEvent(new Event('resize'))
+})
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = previousBodyOverflow
+})
+
+function toggleFullscreen() {
+  isFullscreen.value = !isFullscreen.value
 }
 
 function onRecordVisit(shopId: number) {
@@ -145,6 +118,30 @@ function getMarkerIcon(shopId: number): string {
 </script>
 
 <style scoped>
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.map-container.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  max-width: none;
+  background: white;
+}
+
+.shop-map {
+  width: 100%;
+  height: 600px;
+}
+
+.is-fullscreen .shop-map {
+  height: 100vh;
+  height: 100dvh;
+}
+
 .locate-btn {
   position: absolute;
   bottom: 50px;
@@ -159,35 +156,29 @@ function getMarkerIcon(shopId: number): string {
 }
 
 .fullscreen-btn {
+  display: none;
   position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10000;
+  top: calc(env(safe-area-inset-top) + 10px);
+  right: calc(env(safe-area-inset-right) + 10px);
+  z-index: 20;
   background: #333;
   color: white;
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 0.9rem;
   border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.overlay-map {
-  position: fixed;
-  inset: 0;
-  background: white;
-  z-index: 9999;
-}
+@media (hover: none), (max-width: 768px) {
+  .fullscreen-btn {
+    display: block;
+  }
 
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10000;
-  background: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 1rem;
-  border: none;
+  .locate-btn {
+    bottom: calc(env(safe-area-inset-bottom) + 50px);
+    right: calc(env(safe-area-inset-right) + 10px);
+  }
 }
 </style>
