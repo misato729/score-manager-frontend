@@ -24,7 +24,14 @@
         </button>
       </form>
       <p id="caution">
-        メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。アカウントは削除しないでください。
+        メールアドレス: test@example.com、パスワード: password でログイン後の仕様を体験できます。<button
+          type="button"
+          class="demo-account-link"
+          :disabled="isSubmitting"
+          @click="fillDemoAccount"
+        >
+          このボタン</button
+        >を押すと自動入力されます。アカウントは削除しないでください。
       </p>
     </section>
 
@@ -47,6 +54,11 @@ const auth = useAuthStore()
 
 const form = reactive({ email: '', password: '', remember: true })
 const isSubmitting = ref(false)
+
+const fillDemoAccount = () => {
+  form.email = 'test@example.com'
+  form.password = 'password'
+}
 
 const onLogin = async () => {
   if (isSubmitting.value) return // 二重クリック防止
@@ -172,5 +184,29 @@ input[type="password"] {
 
 #caution {
   font-size: 0.8rem;
+}
+
+.demo-account-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.demo-account-link:hover {
+  color: #1c8cff;
+}
+
+.demo-account-link:focus-visible {
+  outline: 2px solid #1c8cff;
+  outline-offset: 2px;
+}
+
+.demo-account-link:disabled {
+  color: #777;
+  cursor: not-allowed;
 }
 </style>
