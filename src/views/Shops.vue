@@ -62,6 +62,7 @@
   import AdNinja from '@/components/common/AdNinja.vue'
   import {
     extractPrefecture,
+    formatVisitSuccessMessage,
     getDistance,
   } from '@/utils/shop'
     import type { Shop } from '@/types'
@@ -185,7 +186,9 @@
   async function recordVisit(shopId: number) {
   try {
     const res = await api.post('/api/visit', { shop_id: shopId })
-    alert(res.data.message || '✅ 行脚しました！')
+    const shopName = shops.value.find((shop) => shop.id === shopId)?.name
+    const message = res.data.message || 'チェックインが完了しました'
+    alert(formatVisitSuccessMessage(shopName, message))
 
     if (!visitedShopIds.value.includes(shopId)) {
       visitedShopIds.value.push(shopId)
@@ -262,7 +265,9 @@
           getDistanceFromLatLng(a.lat, a.lng) - getDistanceFromLatLng(b.lat, b.lng)
       )
     }
-    return [...filteredShops.value].sort((a, b) => a.id - b.id)
+    return [...filteredShops.value].sort(
+      (a, b) => (a.prefecture_code ?? 999) - (b.prefecture_code ?? 999) || a.id - b.id
+    )
   })
   
   function searchNearby() {

@@ -6,7 +6,7 @@
     </div>
 
     <!-- ✅ タイトル -->
-    <h1 class="page-title">レベル11難易度表</h1>
+    <h1 class="page-title">{{ pageTitle }}</h1>
     <!-- ✅ ユーザーが存在しないときのエラーメッセージ -->
     <div v-if="userNotFound" class="not-found-message">
       このユーザーは存在しないか、アカウントが削除されています。
@@ -77,6 +77,13 @@ const currentUserId = computed(() => authStore.user?.id)
 
 // ✅ ゲストかどうか
 const isGuestView = computed(() => queryUserId.value === null)
+
+const pageTitle = computed(() => {
+  if (queryUserId.value !== null && scoreStore.displayUserName) {
+    return `${scoreStore.displayUserName}さんのレベル11難易度表`
+  }
+  return 'レベル11難易度表'
+})
 
 // ✅ 編集可能か（クエリとログインID一致時）
 const isEditable = computed(() =>

@@ -7,6 +7,7 @@ import Dashboard from '@/views/Dashboard.vue';
 import Inquiry from '@/views/Inquiry.vue';
 import Shops from '@/views/Shops.vue';
 import VisitedShops from '@/views/VisitedShops.vue';
+import VisitRanking from '@/views/VisitRanking.vue';
 import HowToAngya from '@/components/shop/HowToAngya.vue';
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
   { path: '/dashboard/:userId', name: 'UserDashboard', component: Dashboard },
   { path: '/shops', name: 'Shops', component: Shops },
   { path: '/visited_shops', name: 'VisitedShops', component: VisitedShops },
+  { path: '/visit-ranking', name: 'VisitRanking', component: VisitRanking },
   { path: '/songlist', name: 'Songlist', component: Songlist },
   { path: '/inquiry', name: 'Inquiry', component: Inquiry },
   { path: '/how_to_angya', name: 'HowToAngya', component: HowToAngya },

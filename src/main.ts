@@ -13,20 +13,21 @@ app.use(pinia)
 app.use(router)
 
 const key = import.meta.env.VITE_GOOGLE_API_KEY
-if (import.meta.env.DEV) {
-  console.log('✅ 実際のAPIキー:', key)
-}
 
 app.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDiNJLDZz_STC2tqG-14imShfnkPGgcKp4',
+    key,
     libraries: 'places',
     v: 'weekly',
     loading: 'async',
   },
 })
 
-// ✅ CSRFトークンを取得してからマウント
-api.get('/sanctum/csrf-cookie').then(() => {
-  app.mount('#app')
-})
+// バックエンド未起動時も、公開ページは表示できるようにする
+api.get('/sanctum/csrf-cookie')
+  .catch((error) => {
+    console.warn('CSRF cookieの取得に失敗しました', error)
+  })
+  .finally(() => {
+    app.mount('#app')
+  })

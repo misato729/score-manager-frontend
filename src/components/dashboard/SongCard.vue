@@ -6,18 +6,18 @@
     <div v-else-if="isFC" class="fc-label">FULL COMBO!!</div>
 
     <div class="card-surface" :style="{ backgroundColor: rankColor }">
-      <!-- ✅ タイトル（クリックでメモモーダル） -->
+      <!-- ✅ タイトル（編集可能な場合のみクリックでメモモーダル） -->
       <div
         class="title"
         ref="titleRef"
-        :class="{ small: isTooLongTitle, 'clickable': true }"
+        :class="{ small: isTooLongTitle, clickable: props.editable }"
         :style="{ marginTop: isTooLongTitle ? '14px' : isLongTitle ? '20px' : '28px' }"
-        role="button"
-        tabindex="0"
+        :role="props.editable ? 'button' : undefined"
+        :tabindex="props.editable ? 0 : undefined"
         @click="openMemo"
         @keydown.enter.prevent="openMemo"
         @keydown.space.prevent="openMemo"
-        title="メモを編集"
+        :title="props.editable ? 'メモを編集' : undefined"
       >
         {{ props.score.song.title }}
       </div>
@@ -148,6 +148,8 @@ watch(() => scoreWithMemo.value.memo, (v) => {
 })
 
 const openMemo = () => {
+  if (!props.editable) return
+
   localMemo.value = props.score.memo ?? ''  // ★ 開く直前に最新を反映
   isMemoOpen.value = true
 }
