@@ -40,7 +40,11 @@
   </div>
   <!-- ✅ 自分のマイページのみ表示 -->
   <div v-if="isEditable" style="margin-top: 40px; text-align: center;">
-    <button @click="handleDelete" class="danger-button">
+    <button
+      @click="handleDelete"
+      class="danger-button"
+      :disabled="isProtectedDemoAccount"
+    >
       アカウントを削除する
     </button>
   </div>
@@ -74,6 +78,7 @@ const queryUserId = computed(() => {
 })
 
 const currentUserId = computed(() => authStore.user?.id)
+const isProtectedDemoAccount = computed(() => currentUserId.value === 8)
 
 // ✅ ゲストかどうか
 const isGuestView = computed(() => queryUserId.value === null)
@@ -117,6 +122,8 @@ const totalFullCombo = computed(() =>
 const router = useRouter()
 
 const handleDelete = async () => {
+  if (isProtectedDemoAccount.value) return
+
   const confirmed = confirm('アカウントを削除すると戻せません。本当に削除しますか？')
   if (!confirmed) return
 
@@ -262,6 +269,13 @@ watch(
 .danger-button:hover {
   background: #cc0000;
 }
+
+.danger-button:disabled,
+.danger-button:disabled:hover {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
 .not-found-message {
   text-align: center;
   color: #ff4d4f;
