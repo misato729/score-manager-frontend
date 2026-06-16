@@ -5,7 +5,7 @@
   - Lv11の譜面を非公式に10段階に定義した「難易度表」を閲覧可能
   - 譜面ごとにクリアランク・フルコンボ状況を保存
   - Google Maps APIで店舗情報閲覧＆チェックイン機能
-- **使用技術**：Vue 3 + TypeScript / Laravel 12 / PostgreSQL / Vercel + Render
+- **使用技術**：Vue 3 + TypeScript / Laravel 12 / PostgreSQL / Vercel + Render + Neon
 - **URL**：[https://rbplus-rank-manager.site](https://rbplus-rank-manager.site)
 
 - **画面イメージ**
@@ -16,7 +16,8 @@
 ![MAP](./public/map.png)
 
 ## 背景
-音楽ゲーム上級者の間では、公式難易度に加えて有志により作成された非公式の「難易度表」が活用されることが多い。<br>
+音楽ゲームの課題として、公式の同一レベル内でも譜面ごとに難易度差が大きいという点がある。<br>
+そこで、音楽ゲームプレイヤーの間では、公式難易度を有志により細分化された非公式の「難易度表」が活用されることが多い。<br>
 例えばKONAMIの人気音楽ゲーム「beatmania ⅡDX」は最高レベルは12であるが、Lv12の中でも難易度の差が激しく、有志によってLv12をさらに数段階に分ける試みがなされている。<br>
 近年では、難易度表をWebアプリ化してクリアランクを管理する試みがなされている。<br>
 
@@ -27,6 +28,7 @@
 この難易度表の存在により、プレイヤーは実力に見合った適切な難易度の曲を選ぶことができる上、自分のプレイ進捗を可視化できる。<br>
 <br>
 一方、同じくKONAMIの音楽ゲーム「REFLEC BEAT」は「beatmania ⅡDX」と比べるとマイナーなゲームであり、このようなWebアプリがまだ存在していない。<br>
+また、「REFLEC BEAT」も同様に、最高レベルのLv11の中でも難易度差が激しいという課題がある。<br>
 そこで私は、「REFLEC BEAT」においても上記のような難易度表のWebアプリを作成し、プレイヤーのモチベーション維持に貢献するため開発に至った。
 
 ## URL
@@ -73,10 +75,10 @@ https://rbplus-rank-manager.site<br>
 |---------------|---------------------------------------------------------|
 | フロントエンド | Vue 3, Vite, TypeScript, Pinia, Vue Router, Axios     |
 | バックエンド   | Laravel 12, Laravel Breeze, Laravel Sanctum, Laravel Blade     |
-| インフラ       | Vercel（フロントエンド）, Render（バックエンド/DB）           |
-| データベース   | SQLite（ローカル環境）, PostgreSQL（本番環境/Render）         |
+| インフラ       | Vercel（フロントエンド）, Render（バックエンド ~~/DB~~）,  Neon(DB) ※2026/6/14~ |
+| データベース   | SQLite（ローカル環境）, PostgreSQL（本番環境/Neon）         |
 | デザイン       | Figma（画面設計）|
-| その他         | Google Maps API, GitHub, ChatGPT |
+| その他         | Google Maps API, GitHub, ChatGPT, Codex |
 
 
 # 構成図
@@ -84,7 +86,7 @@ https://rbplus-rank-manager.site<br>
 
 ![Architecture](./public/Architecture-20250814.jpg)
 
-このアプリケーションは Vue 3 + Vite を用いたSPAとして構築されており、Laravel（Breeze + Sanctum）と連携したセキュアな認証処理を実装している。インフラはフロントをVercel、バックエンドとDBをRenderにホストし、無料プランのスリープ対策としてGoogle Apps Scriptで定期的にアクセスを行う構成としている。
+このアプリケーションは Vue 3 + Vite を用いたSPAとして構築されており、Laravel（Breeze + Sanctum）と連携したセキュアな認証処理を実装している。インフラはフロントをVercel、バックエンドをRender、DBをNeonにホストし、無料プランのスリープ対策としてGoogle Apps Scriptで定期的にアクセスを行う構成としている。
 
 DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-manager.site` によって独自ドメインで運用している。
 
