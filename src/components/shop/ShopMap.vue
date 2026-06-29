@@ -40,6 +40,7 @@
           <ShopInfoWindow
             :shop="shop"
             :isNear="isNear(shop)"
+            :isVisited="isVisited(shop.id)"
             @close="shop.isOpen = false"
             @record="onRecordVisit(shop.id)"
           />
@@ -110,8 +111,12 @@ function onRecordVisit(shopId: number) {
   emit('record-visit', shopId)
 }
 
-function getMarkerIcon(shopId: number): string {
+function isVisited(shopId: number): boolean {
   return props.visitedShopIds.includes(shopId)
+}
+
+function getMarkerIcon(shopId: number): string {
+  return isVisited(shopId)
     ? 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
     : 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
 }
