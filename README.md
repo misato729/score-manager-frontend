@@ -92,9 +92,72 @@ DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-man
 
 ## データベース構成（ER図）
 
-本アプリでは、ユーザー・楽曲・スコア・設置店舗・訪問履歴の5つのテーブルを中心に構成されている。リレーションの明確化と正規化を重視した設計とし、拡張性や保守性を考慮している。
+本アプリの主要5テーブル（ユーザー・楽曲・スコア・設置店舗・訪問履歴）を、[バックエンドのマイグレーション](https://github.com/misato729/score-manager-backend/tree/main/database/migrations)に基づいて示す。認証トークン・セッション・キャッシュ・ジョブなどのLaravel用テーブルは省略している。
 
-![ER図](./public/er-diagram-20250814.png)
+```mermaid
+erDiagram
+    users ||..o{ scores : "スコアを持つ"
+    songs ||..o{ scores : "スコアの対象"
+    users ||..o{ user_visits : "訪問を記録する"
+    shops ||..o{ user_visits : "訪問先"
+
+    users {
+        bigint id PK
+        varchar name
+        varchar email UK
+        timestamp email_verified_at "nullable"
+        varchar password
+        varchar target "目標ランク・既定値 AAA+"
+        varchar remember_token "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    songs {
+        bigint id PK
+        varchar title
+        varchar jiriki_rank "地力ランク"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    scores {
+        bigint id PK
+        bigint user_id FK
+        bigint song_id FK
+        varchar rank "nullable"
+        boolean fc "フルコンボ・既定値 false"
+        varchar memo "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    shops {
+        bigint id PK
+        varchar name
+        varchar address
+        smallint prefecture_code "nullable・都道府県コード"
+        decimal lat "緯度・精度 10,7"
+        decimal lng "経度・精度 10,7"
+        integer price "nullable・1プレイ料金"
+        smallint number_of_machine "nullable・設置台数"
+        text description "nullable"
+        boolean is_deleted "表示制御・既定値 false"
+        timestamp deleted_at "nullable・論理削除日時"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    user_visits {
+        bigint id PK
+        bigint user_id FK
+        bigint shop_id FK
+        timestamp created_at "nullable・訪問日時"
+        timestamp updated_at "nullable"
+    }
+```
+
+PKは主キー、FKは外部キー、UKは一意キーを表す。各関連は1対0件以上で、スコア・訪問履歴の外部キーには親レコード削除時の連鎖削除が設定されている。
 
 
 # CI/CD
