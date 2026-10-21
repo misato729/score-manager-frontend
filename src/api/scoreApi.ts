@@ -3,7 +3,7 @@ import type { Score } from '@/types'
 
 // ✅ ユーザーごとのスコア一覧を取得
 export const fetchUserSongScores = async (userId: number) => {
-  const response = await api.get(`/api/user-scores?user=${userId}`)
+  const response = await api.get(`/api/users/${userId}/song-scores`)
   return response.data
 }
 
@@ -25,4 +25,3 @@ export const createScore = async (data: {
   const response = await api.post('/api/scores', data)
   return response.data
 }
-  

@@ -39,29 +39,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '@/api/axios'
+import { fetchUserVisitedShops, type VisitedShop } from '@/api/visitApi'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-interface VisitedShop {
-  id: number
-  name: string
-  address: string
-  created_at: string
-  user_name?: string
-}
-
-type VisitedShopsResponse =
-  | VisitedShop[]
-  | {
-      user_name?: string
-      visited_shops?: VisitedShop[]
-    }
 
 const visitedList = ref<VisitedShop[]>([])
 const displayUserName = ref('')
@@ -69,7 +54,10 @@ const isLoading = ref(true)           // ✅ 追加：ロード状態
 const errorMessage = ref<string>('')  // ✅ 追加：エラーメッセージ（任意）
 
 const route = useRoute()
-const userId = computed(() => route.query.user as string)
+const userId = computed(() => {
+  const id = route.params.userId
+  return typeof id === 'string' ? id : ''
+})
 const pageTitle = computed(() => {
   if (userId.value && displayUserName.value) {
     return `${displayUserName.value}さんの行脚履歴`
@@ -77,34 +65,41 @@ const pageTitle = computed(() => {
   return '行脚店舗一覧'
 })
 
-onMounted(async () => {
+watch(userId, async (id, _previousId, onCleanup) => {
+  let cancelled = false
+  onCleanup(() => { cancelled = true })
+  isLoading.value = true
+  errorMessage.value = ''
+  displayUserName.value = ''
+  visitedList.value = []
+
   try {
-    if (!userId.value) {
+    if (!id) {
       // ユーザーIDが無い場合もロード完了にする（"記録なし" を出したくないなら別メッセージにしてもOK）
       errorMessage.value = 'ユーザーIDが指定されていません。'
       return
     }
-    const res = await api.get<VisitedShopsResponse>('/api/visited-shops', {
-      params: { user: userId.value },
-    })
+    const data = await fetchUserVisitedShops(id)
+    if (cancelled) return
 
-    if (Array.isArray(res.data)) {
-      visitedList.value = res.data
-      displayUserName.value = res.data[0]?.user_name ?? ''
+    if (Array.isArray(data)) {
+      visitedList.value = data
+      displayUserName.value = data[0]?.user_name ?? ''
     } else {
-      visitedList.value = res.data.visited_shops ?? []
-      displayUserName.value = res.data.user_name ?? ''
+      visitedList.value = data.visited_shops ?? []
+      displayUserName.value = data.user_name ?? ''
     }
   } catch (err: any) {
+    if (cancelled) return
     console.error('❌ 行脚店舗の取得に失敗しました', err)
     errorMessage.value =
       err?.response?.data?.message ??
       (err?.message || '不明なエラーが発生しました')
     alert(`エラー: ${errorMessage.value}`)
   } finally {
-    isLoading.value = false // ✅ 取得の成否に関わらずロード終了
+    if (!cancelled) isLoading.value = false
   }
-})
+}, { immediate: true })
 
 function extractPrefecture(address: string): string {
   const match = address.match(/^.{2,3}(都|道|府|県)/)

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router';
 import Top from '@/views/Top.vue';
 import Login from '@/views/Login.vue';
 import Register from '@/views/Register.vue';
@@ -10,6 +10,15 @@ import VisitedShops from '@/views/VisitedShops.vue';
 import VisitRanking from '@/views/VisitRanking.vue';
 import HowToAngya from '@/components/shop/HowToAngya.vue';
 
+const redirectLegacyUser = (to: RouteLocationNormalized) => {
+  const name = to.name === 'MyDashboard' ? 'UserDashboard'
+    : to.name === 'VisitedShops' ? 'UserVisitedShops' : undefined
+  const { user, ...query } = to.query
+  if (name && typeof user === 'string' && user) {
+    return { name, params: { userId: user }, query, hash: to.hash, replace: true }
+  }
+}
+
 const routes = [
   { path: '/', name: 'Top', component: Top },
   { path: '/login', name: 'Login', component: Login },
@@ -18,6 +27,7 @@ const routes = [
   { path: '/dashboard/:userId', name: 'UserDashboard', component: Dashboard },
   { path: '/shops', name: 'Shops', component: Shops },
   { path: '/visited_shops', name: 'VisitedShops', component: VisitedShops },
+  { path: '/visited_shops/:userId', name: 'UserVisitedShops', component: VisitedShops },
   { path: '/visit-ranking', name: 'VisitRanking', component: VisitRanking },
   { path: '/songlist', name: 'Songlist', component: Songlist },
   { path: '/inquiry', name: 'Inquiry', component: Inquiry },
@@ -28,3 +38,5 @@ export const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+router.beforeEach(redirectLegacyUser)

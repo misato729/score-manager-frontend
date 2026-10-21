@@ -71,36 +71,36 @@ const authStore = useAuthStore()
 const uiStore = useUiStore()
 const scoreStore = useScoreStore()
 
-// ✅ クエリから user を取得
-const queryUserId = computed(() => {
-  const q = route.query.user
-  return typeof q === 'string' ? Number(q) : null
+// ✅ パスからユーザーIDを取得
+const routeUserId = computed(() => {
+  const id = route.params.userId
+  return typeof id === 'string' ? Number(id) : null
 })
 
 const currentUserId = computed(() => authStore.user?.id)
 const isProtectedDemoAccount = computed(() => currentUserId.value === 8)
 
 // ✅ ゲストかどうか
-const isGuestView = computed(() => queryUserId.value === null)
+const isGuestView = computed(() => routeUserId.value === null)
 
 const pageTitle = computed(() => {
-  if (queryUserId.value !== null && scoreStore.displayUserName) {
+  if (routeUserId.value !== null && scoreStore.displayUserName) {
     return `${scoreStore.displayUserName}さんのレベル11難易度表`
   }
   return 'レベル11難易度表'
 })
 
-// ✅ 編集可能か（クエリとログインID一致時）
+// ✅ 編集可能か（パスとログインID一致時）
 const isEditable = computed(() =>
-  queryUserId.value !== null && queryUserId.value === currentUserId.value
+  routeUserId.value !== null && routeUserId.value === currentUserId.value
 )
 
 // ✅ スコアを読み込む
 watch(
-  () => [authStore.user, queryUserId.value],
+  () => [authStore.user, routeUserId.value],
   async ([user]) => {
-    if (queryUserId.value !== null) {
-      await scoreStore.loadScores(queryUserId.value)
+    if (routeUserId.value !== null) {
+      await scoreStore.loadScores(routeUserId.value)
     } else {
       await scoreStore.loadScoresForGuest()
     }
@@ -153,7 +153,7 @@ const handleDelete = async () => {
 
 // ✅ スコアデータが空で、ゲストでなく、自分でもない → 存在しないユーザー
 const userNotFound = computed(() =>
-  queryUserId.value !== null &&
+  routeUserId.value !== null &&
   !scoreStore.loading &&
   scoreStore.scores.length === 0 &&
   !isEditable.value
@@ -198,7 +198,7 @@ const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
 
 // ✅ 自分のページかどうかを判定
 const isMyPage = computed(() => {
-  const paramUserId = route.query.user?.toString()
+  const paramUserId = route.params.userId?.toString()
   const loginUserId = authStore.user?.id?.toString()
   return paramUserId === loginUserId
 })

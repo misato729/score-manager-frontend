@@ -12,7 +12,7 @@ async function login(page: Page) {
     page.waitForResponse((res) =>
       /\/login$/.test(new URL(res.url()).pathname) && [200, 204].includes(res.status())
     ),
-    page.waitForURL(/\/dashboard(\?|$)/, { timeout: 30_000 }),
+    page.waitForURL(/\/dashboard\/\d+(?:[?#]|$)/, { timeout: 30_000 }),
     page.click('button[type="submit"]'),
   ]).catch(async (err) => {
     // 失敗時のデバッグ出力

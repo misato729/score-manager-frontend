@@ -20,7 +20,7 @@ test.describe('スモークテスト - 本番環境', () => {
       page.click('button[type="submit"]'),
     ]);
 
-    await page.waitForURL(/\/dashboard(\?|$)/, { timeout: 60_000 });
+    await page.waitForURL(/\/dashboard\/\d+(?:[?#]|$)/, { timeout: 60_000 });
     await page.waitForLoadState('networkidle');
     await expect(page.locator('body')).toBeVisible();
   });
