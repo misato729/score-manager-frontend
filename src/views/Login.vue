@@ -66,7 +66,7 @@ const onLogin = async () => {
   try {
     // authStore 側で CSRF取得＆15秒タイムアウトを面倒見ます
     const user = await auth.login({ email: form.email, password: form.password, remember: form.remember })
-    router.push(`/dashboard?user=${user.id}`)
+    router.push(`/dashboard/${user.id}`)
   } catch (e: any) {
     if (e?.message === 'timeout') {
       alert('ログイン処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')

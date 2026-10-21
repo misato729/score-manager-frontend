@@ -66,13 +66,16 @@ https://api.rbplus-rank-manager.site
 
 ## 🎵 スコア関連 API（scoreApi.ts）
 
-### 1. `GET /scores?user_id=xxx`
+### 1. `GET /api/users/{userId}/song-scores`
 
 | 項目       | 内容                                   |
 |------------|----------------------------------------|
-| 概要       | 指定ユーザーの全スコア取得             |
-| パラメータ | `user_id`                              |
-| レスポンス | `Score[]`（曲ID、ランク、FC状態など） |
+| 概要       | 指定ユーザーの全楽曲とスコアを取得（未プレイ曲を含む） |
+| パラメータ | パスの `userId`（数値）                 |
+| レスポンス | 配列（`song_id`, `title`, `jiriki_rank`, `score_id`, `rank`, `fc`, `memo`, `user_name` など） |
+
+登録済みのスコアのみ取得する場合は `GET /api/users/{userId}/scores` を使用する。
+いずれもログイン不要。ユーザーIDはクエリではなくパスで指定する。
 
 ---
 
@@ -103,7 +106,9 @@ https://api.rbplus-rank-manager.site
 ```ts
 await fetchUser()
 const uid = authStore.user?.id
-const scores = await fetchScores(uid)
+if (uid) {
+  const scores = await fetchUserSongScores(uid)
+}
 ```
 
 ### ランク変更時の保存処理
@@ -114,6 +119,28 @@ if (score.id) {
   await createScore({ user_id, song_id, rank: newRank, fc: false })
 }
 ```
+
+## 🚶 行脚履歴 API（visitApi.ts）
+
+### `GET /api/users/{userId}/visited-shops`
+
+| 項目       | 内容                                   |
+|------------|----------------------------------------|
+| 概要       | 指定ユーザーの行脚履歴を取得（ログイン不要） |
+| パラメータ | パスの `userId`（数値）                 |
+| レスポンス | `{ user_name, visited_shops: [{ id, name, address, created_at }] }` |
+
+訪問記録がなくても `user_name` と空の `visited_shops` を返す。
+全楽曲スコア・行脚履歴APIは、存在しないユーザーに対して404を返す。
+IDがない、または数値以外のパスには一致しない。
+
+旧 `GET /api/user-scores?user=...`、`GET /api/scores?user=...`、
+`GET /api/visited-shops?user=...` は廃止する。フロントエンドとバックエンドは、
+新APIを使用する組み合わせで反映する必要がある。
+
+画面URLも `/dashboard/{userId}` と `/visited_shops/{userId}` を使用する。
+旧 `/dashboard?user=...` と `/visited_shops?user=...` は対応する新URLへ転送する。
+ユーザー指定のない `/dashboard` はゲスト用の難易度表を表示する。
 
 ## 今後の拡張候補
 

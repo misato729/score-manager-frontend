@@ -71,7 +71,8 @@ const onRegister = async () => {
   isSubmitting.value = true
   try {
     await withTimeout(auth.register(form), REGISTER_TIMEOUT_MS)
-    router.push('/dashboard')
+    if (!auth.user?.id) throw new Error('no_user_payload')
+    router.push(`/dashboard/${auth.user.id}`)
   } catch (e: any) {
     if (e?.message === 'timeout') {
       alert('登録処理がタイムアウトしました。通信状況を確認して、もう一度お試しください。')

@@ -115,9 +115,9 @@ const percentDisplay = computed(() => {
 
 // ✅ 自分のページのときだけ更新を許可
 const isMyPage = computed(() => {
-  const paramUserId = route.query.user?.toString()
+  const paramUserId = route.params.userId
   const loginUserId = authStore.user?.id?.toString()
-  return paramUserId === loginUserId
+  return typeof paramUserId === 'string' && paramUserId === loginUserId
 })
 
 // ✅ 自分のページのときだけ target を保存
@@ -140,7 +140,7 @@ watch(
 )
 
 watch(
-  () => route.query.user?.toString(),
+  () => route.params.userId,
   (userId) => {
     const loginUserId = authStore.user?.id?.toString()
     if (userId === loginUserId && authStore.user?.target) {

@@ -18,13 +18,13 @@
             <div v-show="menuOpen" class="dropdown">
               <RouterLink
                 class="dropdown-link"
-                :to="`/dashboard?user=${auth.user?.id}`"
+                :to="`/dashboard/${auth.user?.id}`"
               >
                 マイ難易度表
               </RouterLink>
               <RouterLink
                 class="dropdown-link"
-                :to="`/visited_shops?user=${auth.user?.id}`"
+                :to="`/visited_shops/${auth.user?.id}`"
               >
                 行脚履歴
               </RouterLink>
@@ -123,4 +123,3 @@
     background: #f2f2f2;
   }
   </style>
-  
