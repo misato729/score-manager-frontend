@@ -1,10 +1,20 @@
-import type { Mode } from '@/types/mode'
+import type { Mode } from '@/types'
 
 /**
  * ランクスケール定義
  */
 export const NormalRankScale = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C'] as const
 export const ExpertRankScale = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C'] as const
+export const ProRankScale = ['100%', '99.9%', '99.8%', '99.7%', '99.6%', '99.5%', '99.4%', '99.3%', '99.2%', '99.1%', '99.0%', '<99.0%'] as const
+
+export function getRankScale(mode: Mode) {
+  if (mode === 'Pro') return ProRankScale
+  return mode === 'Expert' ? ExpertRankScale : NormalRankScale
+}
+
+export function parseMode(value: unknown): Mode {
+  return value === 'Expert' || value === 'Pro' ? value : 'Normal'
+}
 
 /**
  * ランクカラー定義
@@ -22,6 +32,17 @@ export const RankColors: Record<string, string> = {
   '98%': '#B400FF',
   '99%': '#A9A9F5',
   '100%': '#E6B422',
+  '99.0%': '#A9A9F5',
+  '99.1%': '#A6B5F5',
+  '99.2%': '#A2C1F5',
+  '99.3%': '#9FCDF5',
+  '99.4%': '#9BD9F5',
+  '99.5%': '#98E5F5',
+  '99.6%': '#94E9E8',
+  '99.7%': '#91EDD9',
+  '99.8%': '#8DF1CA',
+  '99.9%': '#8AF5BB',
+  '<99.0%': '#cccccc',
 }
 
 export const getRankColor = (rank: string): string => {
@@ -42,19 +63,24 @@ export function getFCColor(label: string): string {
 
 /**
  * 表示ランク（モードに応じて）
- * Normalモードでは 95%以上 を 'AAA+' にマスクする
+ * 保存値は変えず、モードに応じた粒度で表示する。
  */
-export const rankDisplay = (rank: string, mode: Mode): string => {
-  const masked = ['95%', '96%', '97%', '98%', '99%', '100%']
+export const rankDisplay = (rank: string | null | undefined, mode: Mode): string => {
+  if (!rank) return ''
+  const isProPercentage = ProRankScale.some(value => value === rank) && rank !== '<99.0%'
 
-  // ✅ Normalでは %ランクをすべて AAA+ にマスク
-  if (mode === 'Normal' && masked.includes(rank)) {
+  if (mode === 'Normal' && (ExpertRankScale.slice(0, 6).some(value => value === rank) || isProPercentage)) {
     return 'AAA+'
   }
-
-  // ✅ Expertでは AAA+ を見た目上 95% に変換
-  if (mode === 'Expert' && rank === 'AAA+') {
-    return '95%'
+  if (mode === 'Expert') {
+    if (rank === 'AAA+') return '95%'
+    if (isProPercentage && rank !== '100%') return '99%'
+  }
+  if (mode === 'Pro') {
+    if (rank === '99%') return '99.0%'
+    if (NormalRankScale.some(value => value === rank) || ExpertRankScale.slice(2).some(value => value === rank)) {
+      return '<99.0%'
+    }
   }
 
   return rank
@@ -75,13 +101,25 @@ export const RankScoreMap: Record<string, number> = {
   '98%': 10,
   '99%': 11,
   '100%': 12,
+  '99.0%': 11,
+  '99.1%': 11.1,
+  '99.2%': 11.2,
+  '99.3%': 11.3,
+  '99.4%': 11.4,
+  '99.5%': 11.5,
+  '99.6%': 11.6,
+  '99.7%': 11.7,
+  '99.8%': 11.8,
+  '99.9%': 11.9,
+  // 下限が不明なため、C以上の達成とはみなさない。
+  '<99.0%': 0.5,
 }
 
 /**
  * 数値比較用：rankA >= rankB のとき true
  */
-export const isRankGreaterOrEqual = (rankA: string, rankB: string): boolean => {
-  const a = RankScoreMap[rankA] ?? 0
+export const isRankGreaterOrEqual = (rankA: string | null | undefined, rankB: string): boolean => {
+  const a = RankScoreMap[rankA ?? ''] ?? 0
   const b = RankScoreMap[rankB] ?? 0
   return a >= b
 }

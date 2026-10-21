@@ -167,11 +167,6 @@ for (const userId of [52, 8]) {
       ],
     })
 
-    const initialTargetSaved = page.waitForResponse((response) =>
-      new URL(response.url()).pathname === '/api/users/target' &&
-      response.request().method() === 'PUT' &&
-      response.request().postDataJSON().target === 'AAA+',
-    )
     await page.goto(`/dashboard/${userId}`)
 
     await expect(page.getByRole('heading', { name: '本人さんのレベル11難易度表' })).toBeVisible()
@@ -184,8 +179,8 @@ for (const userId of [52, 8]) {
       await expect(deleteButton).toBeEnabled()
     }
 
-    // 初期目標の反映（300msのdebounce）が完了してから手動変更を検証する。
-    await initialTargetSaved
+    // 初期表示では目標を保存せず、明示的な変更だけを保存する。
+    expect(requests.filter(({ url, method }) => url.pathname === '/api/users/target' && method === 'PUT')).toEqual([])
     requests.length = 0
     await page.locator('.goal-row select').selectOption('AA')
     await expect.poll(() => requests

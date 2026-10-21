@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { NormalRankScale, ExpertRankScale } from '@/utils/rank'
-import { useUiStore } from './uiStore'
+import { ref } from 'vue'
 
 export const useFilterStore = defineStore('filter', () => {
   // 選択中のランク（複数選択可能）
@@ -48,12 +46,6 @@ export const useFilterStore = defineStore('filter', () => {
     selectedRanks.value = selectedRanks.value.filter(rank => validRanks.includes(rank))
   }
 
-  // ✅ 現在のモードに応じたランクスケール
-  const currentRankScale = computed(() => {
-    const uiStore = useUiStore()
-    return uiStore.mode === 'Normal' ? NormalRankScale : ExpertRankScale
-  })
-
   return {
     selectedRanks,
     showFC,
@@ -63,6 +55,5 @@ export const useFilterStore = defineStore('filter', () => {
     toggleRank,
     clearInvalidRanks,
     isRankSelected,
-    currentRankScale
   }
 })

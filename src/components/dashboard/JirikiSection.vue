@@ -10,6 +10,7 @@
         :key="score.song.id"
         :score="score"
         :editable="editable"
+        :mode="mode"
       />
     </div>
   </div>
@@ -17,12 +18,13 @@
 
 <script setup lang="ts">
 import SongCard from './SongCard.vue'
-import type { Score } from '@/types'
+import type { Mode, Score } from '@/types'
 
-const props = defineProps<{
+defineProps<{
   tierName: string
   scores: Score[]
   editable: boolean
+  mode: Mode
 }>()
 </script>
 
@@ -53,9 +55,9 @@ const props = defineProps<{
   max-width: unset; /* ← 必ず上書き！ */
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .song-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

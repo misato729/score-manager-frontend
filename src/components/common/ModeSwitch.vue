@@ -5,7 +5,8 @@
         type="radio"
         name="mode"
         value="Normal"
-        v-model="mode"
+        :checked="mode === 'Normal'"
+        @change="emit('change', 'Normal')"
       />
       Normal
     </label>
@@ -15,27 +16,30 @@
         type="radio"
         name="mode"
         value="Expert"
-        v-model="mode"
+        :checked="mode === 'Expert'"
+        @change="emit('change', 'Expert')"
       />
       Expert
+    </label>
+    <span class="divider">/</span>
+    <label class="radio-label">
+      <input
+        type="radio"
+        name="mode"
+        value="Pro"
+        :checked="mode === 'Pro'"
+        @change="emit('change', 'Pro')"
+      />
+      Pro
     </label>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useUiStore } from '@/stores/uiStore'
 import type { Mode } from '@/types'
-import { computed } from 'vue'
 
-const uiStore = useUiStore()
-
-// ✅ v-model連携：getter/setterでリアルタイムに反映
-const mode = computed<Mode>({
-  get: () => uiStore.mode,
-  set: (newMode) => {
-    uiStore.setMode(newMode)
-  }
-})
+defineProps<{ mode: Mode }>()
+const emit = defineEmits<{ change: [mode: Mode] }>()
 </script>
 
 <style scoped>
