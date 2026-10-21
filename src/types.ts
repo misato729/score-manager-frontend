@@ -1,7 +1,7 @@
-import { NormalRankScale, ExpertRankScale } from '@/utils/rank'
+import { NormalRankScale, ExpertRankScale, ProRankScale } from '@/utils/rank'
 
-export type Mode = 'Normal' | 'Expert'
-export type Rank = typeof NormalRankScale[number] | typeof ExpertRankScale[number]
+export type Mode = 'Normal' | 'Expert' | 'Pro'
+export type Rank = typeof NormalRankScale[number] | typeof ExpertRankScale[number] | typeof ProRankScale[number]
 
 export interface User {
   id: number

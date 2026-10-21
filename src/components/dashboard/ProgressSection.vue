@@ -3,7 +3,7 @@
     <!-- 目標ランク選択 -->
     <div class="goal-row">
       <label class="label">目標：</label>
-      <RankSelect />
+      <RankSelect :mode="mode" @change="saveTarget" />
       <span class="count-display">{{ totalAchieved }} / {{ totalSongs }} ({{ percentDisplay }})</span>
       <button class="toggle-btn" @click="showDetail = !showDetail">
         {{ showDetail ? '詳細非表示' : '詳細表示' }}
@@ -53,7 +53,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useRoute } from 'vue-router'
 import { updateTarget } from '@/api/userApi'
 import { rankDisplay, isRankGreaterOrEqual } from '@/utils/rank'
-import type { Score } from '@/types'
+import type { Mode, Rank, Score } from '@/types'
 
 // ✅ props: ユーザーの全スコア（126曲分）
 interface Props {
@@ -62,6 +62,7 @@ interface Props {
   total: number
   selectRank: string
   allSongs: Array<any>
+  mode: Mode
 }
 
 const props = defineProps<Props>()
@@ -71,22 +72,14 @@ const uiStore = useUiStore()
 const authStore = useAuthStore()
 const route = useRoute()
 
-const mode = computed(() => uiStore.mode)
-const selectedRank = computed(() => uiStore.selectedRank)
+const selectedRank = computed(() => rankDisplay(uiStore.selectedRank, props.mode))
 const selectedRankForColor = computed(() => selectedRank.value)
 
 const totalFullCombo = computed(() => props.fullCombo)
 
-// ✅ AAA+ は Expert では見た目 95% に変換して比較対象にする
-const selectedRankRaw = computed(() => {
-  return mode.value === 'Normal' && selectedRank.value === 'AAA+'
-    ? '95%'
-    : selectedRank.value
-})
-
 // ✅ 達成済み判定
 const isAchieved = (s: Score): boolean => {
-  return isRankGreaterOrEqual(s.rank, selectedRankRaw.value)
+  return isRankGreaterOrEqual(rankDisplay(s.rank, props.mode), selectedRank.value)
 }
 
 // ✅ 地力ランク一覧
@@ -120,35 +113,29 @@ const isMyPage = computed(() => {
   return typeof paramUserId === 'string' && paramUserId === loginUserId
 })
 
-// ✅ 自分のページのときだけ target を保存
-watch(
-  () => uiStore.selectedRank,
-  (newRank) => {
-    if (isMyPage.value && newRank) {
-      updateTarget(newRank)
-        .then(() => {
-          if (import.meta.env.DEV) {
-            console.log(`✅ [DEV] target更新成功: ${newRank}`)
-          }
-        })
-        .catch((e) => {
-          console.error('❌ target更新失敗:', e)
-        })
-    }
-  },
-  { immediate: false }
-)
+// 表示モードの変更では保存せず、目標を明示的に選んだときだけ保存する。
+let targetSaveQueue = Promise.resolve()
+let targetSaveVersion = 0
+function saveTarget(newRank: Rank) {
+  const user = authStore.user
+  if (!isMyPage.value || !user) return
+  const version = ++targetSaveVersion
+  // 連続変更でも、最後に選んだ目標が最後に保存されるよう順番を保つ。
+  targetSaveQueue = targetSaveQueue.then(async () => {
+    if (authStore.user !== user) return
+    await updateTarget(newRank)
+    if (authStore.user === user && version === targetSaveVersion) user.target = newRank
+  }).catch((error) => {
+    console.error('❌ target更新失敗:', error)
+  })
+}
 
 watch(
-  () => route.params.userId,
-  (userId) => {
-    const loginUserId = authStore.user?.id?.toString()
-    if (userId === loginUserId && authStore.user?.target) {
-      uiStore.selectedRank = authStore.user.target
-      if (import.meta.env.DEV) {
-        console.log(`✅ [DEV] 自分のページに戻ったので target を再設定: ${authStore.user.target}`)
-      }
-    }
+  [isMyPage, () => route.params.userId, () => isMyPage.value ? authStore.user?.target : undefined],
+  () => {
+    uiStore.selectedRank = isMyPage.value && authStore.user?.target
+      ? authStore.user.target
+      : 'AAA+'
   },
   { immediate: true }
 )

@@ -2,7 +2,7 @@
   <div class="dashboard-wrapper">
     <!-- ✅ モード切替（右上） -->
     <div class="top-controls" v-if="!isGuestView">
-      <ModeSwitch />
+      <ModeSwitch :mode="mode" @change="setMode" />
     </div>
 
     <!-- ✅ タイトル -->
@@ -24,6 +24,7 @@
     <section class="card" v-if="!isGuestView">
       <h2 class="section-title">Progress</h2>
       <ProgressSection
+        :mode="mode"
         :achieved="totalAchieved"
         :fullCombo="totalFullCombo"
         :total="scoreStore.scores.length"
@@ -35,7 +36,7 @@
     <!-- ✅ Tier セクション -->
     <section class="card">
       <h2 class="section-title">Tier</h2>
-      <TierSection :songs="scoreStore.scores" :editable="isEditable" :showFilter="!isGuestView" />
+      <TierSection :mode="mode" :songs="scoreStore.scores" :editable="isEditable" :showFilter="!isGuestView" />
     </section>
   </div>
   <!-- ✅ 自分のマイページのみ表示 -->
@@ -55,14 +56,14 @@
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
-import { debounce } from 'lodash'
 import ModeSwitch from '@/components/common/ModeSwitch.vue'
 import ProgressSection from '@/components/dashboard/ProgressSection.vue'
 import TierSection from '@/components/dashboard/TierSection.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useScoreStore } from '@/stores/scoreStore'
-import { updateTarget } from '@/api/userApi'
+import { parseMode } from '@/utils/rank'
+import type { Mode } from '@/types'
 import api from '@/api/axios'
 import AdNinja from '@/components/common/AdNinja.vue'
 
@@ -70,6 +71,11 @@ const route = useRoute()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
 const scoreStore = useScoreStore()
+const mode = computed(() => parseMode(route.query.mode))
+
+function setMode(newMode: Mode) {
+  router.push({ query: { ...route.query, mode: newMode }, hash: route.hash })
+}
 
 // ✅ パスからユーザーIDを取得
 const routeUserId = computed(() => {
@@ -98,7 +104,7 @@ const isEditable = computed(() =>
 // ✅ スコアを読み込む
 watch(
   () => [authStore.user, routeUserId.value],
-  async ([user]) => {
+  async () => {
     if (routeUserId.value !== null) {
       await scoreStore.loadScores(routeUserId.value)
     } else {
@@ -159,61 +165,6 @@ const userNotFound = computed(() =>
   !isEditable.value
 )
 
-// ✅ モード変更＆target保存のdebounced関数
-const expertRanks = ['95%', '96%', '97%', '98%', '99%', '100%']
-const applyModeAndSaveTarget = debounce(async (target: string | undefined) => {
-  if (!target) return
-
-  // ✅ モード切り替え
-  if (expertRanks.includes(target)) {
-    uiStore.setMode('Expert')
-    if (import.meta.env.DEV) {
-      console.log(`✅ [DEV] Expertモードに切り替え（target: ${target}）`)
-    }
-  } else {
-    uiStore.setMode('Normal')
-    if (import.meta.env.DEV) {
-      console.log(`✅ [DEV] Normalモードに切り替え（target: ${target}）`)
-    }
-  }
-
-  // ✅ selectedRank に反映
-  uiStore.selectedRank = target
-  if (import.meta.env.DEV) {
-    console.log(`✅ [DEV] selectedRank に設定: ${target}`)
-  }
-
-  // ✅ APIに保存（ログイン時のみ）
-  try {
-    await updateTarget(target)
-    if (import.meta.env.DEV) {
-      console.log(`✅ [DEV] target更新成功（API保存完了）: ${target}`)
-    }
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('❌ [DEV] target更新失敗（APIエラー）:', error)
-    }
-  }
-}, 300)
-
-// ✅ 自分のページかどうかを判定
-const isMyPage = computed(() => {
-  const paramUserId = route.params.userId?.toString()
-  const loginUserId = authStore.user?.id?.toString()
-  return paramUserId === loginUserId
-})
-
-// ✅ targetを監視：自分のページのときだけ反映
-watch(
-  () => authStore.user?.target,
-  (newTarget) => {
-    if (isMyPage.value) {
-      applyModeAndSaveTarget(newTarget)
-    }
-  },
-  { immediate: true }
-)
-
 </script>
 
 <style scoped>
@@ -221,6 +172,11 @@ watch(
   max-width: 960px;
   margin: 0 auto;
   padding: 32px 16px;
+}
+
+.ninja-ad {
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .page-title {

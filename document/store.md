@@ -7,7 +7,7 @@
 | `authStore.ts`   | 認証状態（ログイン中ユーザー・エラー）             |
 | `filterStore.ts` | 楽曲フィルター（ランク・FC状態など）               |
 | `scoreStore.ts`  | スコア情報の保持とCRUD（取得・更新・保存）         |
-| `uiStore.ts`     | UIのモード管理（Normal/Expert, 編集モードなど）     |
+| `uiStore.ts`     | 編集モードと目標ランクの管理                       |
 
 ---
 
@@ -75,16 +75,16 @@
 
 | 変数名        | 型                        | 説明                                 |
 |---------------|---------------------------|--------------------------------------|
-| `mode`        | `"normal" \| "expert"`    | モード（Normal / Expert）           |
 | `editMode`    | `boolean`                 | 編集モードON/OFF                     |
-| `targetRank`  | `string`                  | 目標ランク（例：AAA+, 98%など）      |
+| `selectedRank`| `Rank`                    | 目標ランク（AAA+, 98%, 99.5%など。Proのランクを含む） |
 
-### ◾ 主な関数（actions）
+`editMode` と `selectedRank` は各コンポーネントから直接更新する。モード切り替え用の状態・関数は持たない。
 
-| 関数名         | 説明                                 |
-|----------------|--------------------------------------|
-| `toggleMode()` | モードをトグル切り替え               |
-| `setEditMode()`| 編集状態を設定                       |
+### ◾ 表示モード（URLクエリ）
+
+表示モードは `Dashboard.vue` が `route.query.mode` から取得する。`Normal` / `Expert` / `Pro` の完全一致だけを有効とし、未指定・不正な値・配列の場合は `Normal` として表示する。
+
+`ModeSwitch.vue` は `mode` を props で受け取り、選択時に `change` イベントを通知する。`Dashboard.vue` が既存のクエリパラメータと hash を保持して URL の `mode` を更新し、各表示コンポーネントへモードを props で渡す。再読み込みやブラウザーの戻る・進むでも URL に従って表示する。
 
 ---
 
@@ -93,7 +93,8 @@
 | 状態                     | 使用コンポーネント例               |
 |--------------------------|------------------------------------|
 | `authStore.user`         | `Header.vue`, `Dashboard.vue`       |
-| `uiStore.mode`           | `ModeSwitch.vue`, `RankSelect.vue`  |
+| `route.query.mode`（Dashboardで解釈してpropsで渡す） | `ModeSwitch.vue`, `RankSelect.vue`, `FilterPanel.vue`, `SongCard.vue` |
+| `uiStore.selectedRank`   | `RankSelect.vue`, `ProgressSection.vue` |
 | `filterStore.selectedRanks` | `FilterPanel.vue`, `JirikiSection.vue` |
 | `scoreStore.scores`      | `SongCard.vue`, `ProgressBar.vue`   |
 

@@ -1,7 +1,7 @@
 <template>
   <div class="tier-section">
     <!-- ✅ フィルターパネル -->
-    <FilterPanel v-if="showFilter" />
+    <FilterPanel v-if="showFilter" :mode="mode" :hasBelowProRank="hasBelowProRank" />
 
     <!-- ✅ 地力別セクション（10段階） -->
     <div class="jiriki-container">
@@ -11,6 +11,7 @@
         :tierName="group.tier"
         :scores="group.scores"
         :editable="editable"
+        :mode="mode"
       />
     </div>
   </div>
@@ -21,30 +22,33 @@ import { computed } from 'vue'
 import FilterPanel from '@/components/dashboard/FilterPanel.vue'
 import JirikiSection from '@/components/dashboard/JirikiSection.vue'
 import { useFilterStore } from '@/stores/filterStore'
-import { useUiStore } from '@/stores/uiStore'
-import { rankDisplay } from '@/utils/rank'
-import type { Score } from '@/types'
+import { getRankScale, rankDisplay } from '@/utils/rank'
+import type { Mode, Score } from '@/types'
 
 // ✅ props（Score型に変更）
 const props = defineProps<{
   songs: Score[]  // ← Scoreとして受け取る
   editable: boolean
   showFilter: boolean 
+  mode: Mode
 }>()
 
 const filterStore = useFilterStore()
-const uiStore = useUiStore()
-const mode = computed(() => uiStore.mode)
+const hasBelowProRank = computed(() => props.songs.some(score => score.rank === '<99.0%'))
+const allRanksSelected = computed(() =>
+  getRankScale(props.mode).every(rank => filterStore.selectedRanks.includes(rank)) &&
+  (!hasBelowProRank.value || filterStore.selectedRanks.includes('<99.0%'))
+)
 
 // ✅ モード・ランク・FCでフィルタリング
 const filteredScores = computed(() =>
   props.songs.filter(score => {
-    const display = rankDisplay(score.rank, mode.value)
+    if (!props.showFilter) return true
+    const display = rankDisplay(score.rank, props.mode)
 
-    const rankOk =
-      score.rank === '' || // ← rank未入力でもALLなら通す
-      filterStore.selectedRanks.length === 0 ||
-      filterStore.selectedRanks.includes(display)
+    const rankOk = display === ''
+      ? allRanksSelected.value
+      : filterStore.selectedRanks.includes(display)
 
     const fcOk =
       (score.fc && filterStore.showFC) ||

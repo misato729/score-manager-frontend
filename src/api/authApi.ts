@@ -1,5 +1,6 @@
 // src/api/authApi.ts
 import api from '@/api/axios'
+import type { Rank } from '@/types'
 
 const USER_ME_ENDPOINT = '/api/user' // ← /api に統一
 
@@ -15,6 +16,7 @@ export type User = {
   id: number
   name: string
   email: string
+  target?: Rank
 }
 
 /** ログイン → /api/user でユーザー取得（Cookie方式） */

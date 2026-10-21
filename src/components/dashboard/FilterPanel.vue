@@ -42,22 +42,23 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { useUiStore } from '@/stores/uiStore'
 import { useFilterStore } from '@/stores/filterStore'
 import {
   getRankColor,
   rankDisplay,
-  NormalRankScale,
-  ExpertRankScale
+  getRankScale,
 } from '@/utils/rank'
+import type { Mode } from '@/types'
 
-const uiStore = useUiStore()
+const props = defineProps<{ mode: Mode; hasBelowProRank: boolean }>()
 const filterStore = useFilterStore()
 
-const mode = computed(() => uiStore.mode)
-const currentRanks = computed(() =>
-  mode.value === 'Expert' ? ExpertRankScale : NormalRankScale
-)
+const currentRanks = computed(() => {
+  const ranks: string[] = [...getRankScale(props.mode)]
+  // Proで保存した範囲は、下位ランクを推測せず独立した分類にする。
+  if (props.hasBelowProRank && !ranks.includes('<99.0%')) ranks.push('<99.0%')
+  return ranks
+})
 
 // ✅ 初回マウント時に全ON
 onMounted(() => {
@@ -67,7 +68,7 @@ onMounted(() => {
 })
 
 // ✅ モード切り替え時にも全ONに追従
-watch(mode, () => {
+watch(currentRanks, () => {
   filterStore.selectedRanks = [...currentRanks.value]
   filterStore.showFC = true
   filterStore.showNotFC = true

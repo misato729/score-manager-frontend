@@ -24,7 +24,11 @@
 
       <!-- ✅ 編集可能（自分のスコアページ） -->
       <div v-if="props.editable" class="bottom">
-        <select v-model="localRank" @change="onSave">
+        <select v-model="displayRank" @change="onSave">
+          <option value="">未登録</option>
+          <option v-if="displayRank && !currentRanks.some(rank => rank === displayRank)" :value="displayRank" disabled>
+            {{ displayRank }}
+          </option>
           <option v-for="rank in currentRanks" :key="rank" :value="rank">{{ rank }}</option>
         </select>
         <label>
@@ -85,26 +89,24 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, nextTick } from 'vue'
-import type { Score } from '@/types'
-import { getRankColor, rankDisplay } from '@/utils/rank'
-import { useUiStore } from '@/stores/uiStore'
+import type { Mode, Score } from '@/types'
+import { getRankColor, rankDisplay, getRankScale } from '@/utils/rank'
 import { useScoreStore } from '@/stores/scoreStore'
 
 const props = defineProps<{
   score: Score
   editable: boolean
+  mode: Mode
 }>()
 
-const uiStore = useUiStore()
 const scoreStore = useScoreStore()
-const mode = computed(() => uiStore.mode)
 
 const localRank = ref(props.score.rank)
 const localFc = ref(Boolean(props.score.fc))
 
 watch(() => props.score, (newScore) => {
   localRank.value = newScore.rank
-  localFc.value = Boolean(newScore.fc)
+  localFc.value = newScore.rank === '100%' || Boolean(newScore.fc)
 }, { immediate: true })
 
 watch(localRank, (newRank) => {
@@ -118,18 +120,23 @@ const isFC = computed(() => localFc.value)
 const showGlow = computed(() => isFC.value || isExcellent.value)
 const fcLocked = computed(() => isExcellent.value)
 const rankColor = computed(() =>
-  getRankColor(rankDisplay(localRank.value, mode.value)) || '#f2f2f2'
+  getRankColor(rankDisplay(localRank.value, props.mode)) || '#f2f2f2'
 )
 
-const normalRanks = ['AAA+', 'AAA', 'AA', 'A', 'B', 'C']
-const expertRanks = ['100%', '99%', '98%', '97%', '96%', '95%', 'AAA', 'AA', 'A', 'B', 'C']
-const currentRanks = computed(() => (mode.value === 'Expert' ? expertRanks : normalRanks))
+const currentRanks = computed(() => getRankScale(props.mode))
+const displayRank = computed({
+  get: () => rankDisplay(localRank.value, props.mode),
+  set: (rank: string) => {
+    localRank.value = rank
+    if (rank === '100%') localFc.value = true
+  },
+})
 
 const onSave = async () => {
   await scoreStore.saveScore(props.score.id, {
   memo: localMemo.value,
   rank: localRank.value,
-  fc: localFc.value ? 1 : 0
+  fc: localFc.value
 })
 }
 
@@ -177,7 +184,7 @@ const saveMemo = async () => {
     const updated = await scoreStore.saveScore(props.score.id, {
       memo: localMemo.value,
       rank: localRank.value,
-      fc: localFc.value ? 1 : 0
+      fc: localFc.value
     })
     // サーバが最新を返すならそれで上書き（返さない場合でも store が更新されていればOK）
     if (updated?.memo !== undefined) {
