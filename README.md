@@ -86,13 +86,23 @@ https://rbplus-rank-manager.site<br>
 # 構成図
 ## アーキテクチャ構成図
 
-![Architecture](./public/Architecture-20261023.png)
+### アプリケーション構成
 
-![店舗情報の自動同期](./public/Architecture-shop-sync-20261023.png)
+![Architecture](./public/Architecture-20261023.png)
 
 このアプリケーションは Vue 3 + Vite を用いたSPAとして構築されており、Laravel（Breeze + Sanctum）と連携したセキュアな認証処理を実装している。インフラはフロントをVercel、バックエンドをRender、DBをNeonにホストし、無料プランのスリープ対策としてGoogle Apps Scriptで定期的にアクセスを行う構成としている。
 
 DNS管理はムームードメインで行い、ドメイン名 `rbplus-rank-manager.site` によって独自ドメインで運用している。
+
+### 店舗情報の自動同期
+
+![店舗情報の自動同期](./public/Architecture-shop-sync-20261023.png)
+
+Google Apps Script（GAS）が毎日07:00（日本時間）を指定してGitHub Actionsへ起動依頼する。通常は本実行と7時台の予備確認の計2回GASが動作し、店舗同期は1日1回行う。GitHubへの起動依頼に失敗した場合だけ7時台に再試行する。自動の起動依頼は07:00以上08:00未満に限り、実際の開始にはGASの遅延やGitHub runnerの待ち時間が加わる。
+
+GitHub ActionsでLaravelの `shops:sync-konami` コマンドを実行し、KONAMI公式検索の全47都道府県を取得してNeonの店舗情報と照合する。全件を正常に取得した後、5日連続で未掲載の店舗を非公開にし、自動非公開にした店舗が復帰した場合は再公開する。新たな非公開化をSentry経由でメール通知する。Renderの起動状態には依存しない。
+
+取得に失敗した場合は店舗情報を更新しない。起動依頼の受付後に同期処理が失敗した場合は、自動で再実行せず原因確認後に手動実行する。詳細は[バックエンドの運用説明](https://github.com/misato729/score-manager-backend#設置店舗の自動非公開化再公開)を参照。
 
 ## データベース構成（ER図）
 
