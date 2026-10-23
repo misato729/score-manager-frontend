@@ -86,7 +86,9 @@ https://rbplus-rank-manager.site<br>
 # 構成図
 ## アーキテクチャ構成図
 
-![Architecture](./public/Architecture-20250814.jpg)
+![Architecture](./public/Architecture-20261023.png)
+
+![店舗情報の自動同期](./public/Architecture-shop-sync-20261023.png)
 
 このアプリケーションは Vue 3 + Vite を用いたSPAとして構築されており、Laravel（Breeze + Sanctum）と連携したセキュアな認証処理を実装している。インフラはフロントをVercel、バックエンドをRender、DBをNeonにホストし、無料プランのスリープ対策としてGoogle Apps Scriptで定期的にアクセスを行う構成としている。
 
